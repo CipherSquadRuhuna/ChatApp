@@ -4,13 +4,23 @@ import client.User;
 import common.Chat;
 import common.Message;
 
+import java.net.MalformedURLException;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws RemoteException, MalformedURLException {
+        //create a registry
+        LocateRegistry.createRegistry(1099);
         // create new server
-        Server server = new Server();
+        ServerInterface server = new Server();
+        // bind the object
+        Naming.rebind("server",server);
+
+        ((Server) server).listenForUsers();
 
         // create 5 users
         User Alpha = new User(1, "Alpha");
@@ -44,14 +54,14 @@ public class Main {
         // test - get all level01_chat messages
         ArrayList<Message> messages = level01_chat.getMessages();
 
-        for (Message m : messages) {
-            System.out.println(m.getUser().getNickname() + ":"+m.getMessageText());
-        }
-
-        // print list of subscribers in a chat
-        for (User u: level01_chat.getSubscribers()) {
-            System.out.println(u.getNickname());
-        }
+//        for (Message m : messages) {
+//            System.out.println(m.getUser().getNickname() + ":"+m.getMessageText());
+//        }
+//
+//        // print list of subscribers in a chat
+//        for (User u: level01_chat.getSubscribers()) {
+//            System.out.println(u.getNickname());
+//        }
 
 
 

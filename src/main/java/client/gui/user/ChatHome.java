@@ -1,24 +1,51 @@
 package client.gui.user;
 
-import javax.swing.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import common.MessageObserver;
 
-public class ChatHome extends JFrame {
+import javax.swing.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.Socket;
+
+public class ChatHome extends JFrame implements MessageObserver {
     private JPanel mainPanel;
-    private JButton button1;
-    private JButton button2;
+    private JLabel messageField;
 
     public ChatHome() {
         setTitle("Chat Home");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setContentPane(mainPanel);
-        setSize(800, 600);
+        setSize(300, 600);
         setLocationRelativeTo(null);
         setVisible(true);
+
+        // connect to the server
+        try {
+            Socket socket = new Socket("localhost", 3001);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
+
+            String message = in.readLine();
+            messageField.setText(message);
+            System.out.println("Got the message: " + message);
+
+
+
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
     }
+
 
     public JPanel getMainPanel() {
         return mainPanel;
+    }
+
+
+    @Override
+    public void messageReceived(String message) {
+        messageField.setText(message);
     }
 }

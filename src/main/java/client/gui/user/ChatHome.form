@@ -43,16 +43,10 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="544a4" class="javax.swing.JButton" binding="button1" default-binding="true">
+          <component id="cecd" class="javax.swing.JLabel" binding="messageField">
             <constraints/>
             <properties>
-              <text value="Button"/>
-            </properties>
-          </component>
-          <component id="bc64a" class="javax.swing.JButton" binding="button2" default-binding="true">
-            <constraints/>
-            <properties>
-              <text value="Button"/>
+              <text value="Message"/>
             </properties>
           </component>
         </children>
