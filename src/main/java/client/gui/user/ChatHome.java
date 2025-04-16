@@ -1,16 +1,25 @@
 package client.gui.user;
 
 import common.MessageObserver;
+import server.ServerInterface;
 
 import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.MalformedURLException;
 import java.net.Socket;
+import java.rmi.Naming;
+import java.rmi.NotBoundException;
+import java.rmi.RemoteException;
 
 public class ChatHome extends JFrame implements MessageObserver {
     private JPanel mainPanel;
     private JLabel messageField;
+    private JTextField messageText;
+    private JButton sendButton;
 
     public ChatHome() {
         setTitle("Chat Home");
@@ -21,9 +30,6 @@ public class ChatHome extends JFrame implements MessageObserver {
         setVisible(true);
 
         // connect to the server
-
-
-
 
             new Thread(() -> {
                 try {
@@ -39,9 +45,23 @@ public class ChatHome extends JFrame implements MessageObserver {
                 }
             }).start();
 
+        sendButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
 
+                try {
+                    ServerInterface server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");
+                    server.sendBroadcastMessage(messageText.getText());
 
-
+                } catch (NotBoundException ex) {
+                    throw new RuntimeException(ex);
+                } catch (MalformedURLException ex) {
+                    throw new RuntimeException(ex);
+                } catch (RemoteException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        });
     }
 
 
