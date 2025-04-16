@@ -21,20 +21,26 @@ public class ChatHome extends JFrame implements MessageObserver {
         setVisible(true);
 
         // connect to the server
-        try {
-            Socket socket = new Socket("localhost", 3001);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-
-            String message = in.readLine();
-            messageField.setText(message);
-            System.out.println("Got the message: " + message);
 
 
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
+            new Thread(() -> {
+                try {
+                Socket socket = new Socket("localhost", 3001);
+                BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                while(true) {
+                    String message = in.readLine();
+                    messageField.setText(message);
+                    System.out.println("Got the message: " + message);
+                }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }).start();
+
+
+
 
     }
 
