@@ -1,7 +1,6 @@
-package client.gui.user;
+package client.gui.common;
 
 import client.gui.user.common.ChatHandler;
-import client.gui.user.common.UserMenu;
 import common.Chat;
 import server.ServerInterface;
 
@@ -10,8 +9,12 @@ import java.awt.*;
 import java.rmi.Naming;
 import java.util.ArrayList;
 
-public class UserChatScreen extends UserMenu  {
+public class ChatScreen extends JPanel {
+
+    // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
+
+    // swing component
     private JTextArea chatArea;
     private JScrollPane chatScrollPane;
     private JTextField messageField;
@@ -19,8 +22,7 @@ public class UserChatScreen extends UserMenu  {
     private JLabel userMessageLabel;
     private JPanel rightPanel;
 
-    public UserChatScreen(UserScreen userScreen) {
-        super(userScreen);
+    public ChatScreen() {
         initialize();
     }
 
@@ -45,7 +47,7 @@ public class UserChatScreen extends UserMenu  {
         add(rightPanel, BorderLayout.CENTER);
 
         // load the menubar
-        add(super.menuBar, BorderLayout.NORTH);
+//        add(super.menuBar, BorderLayout.NORTH);
 
         // create chat handler
         ChatHandler chat = new ChatHandler(chatArea,userMessageLabel);
