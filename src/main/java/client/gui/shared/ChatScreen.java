@@ -1,4 +1,4 @@
-package client.gui.common;
+package client.gui.shared;
 
 import client.gui.user.common.ChatHandler;
 import common.Chat;

@@ -1,5 +1,7 @@
 package client.gui.user;
 
+import client.gui.common.AppScreen;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -9,10 +11,10 @@ public class UserLoginScreen extends JPanel {
     private JTextField username;
     private JPasswordField password;
     private JButton login;
-    private UserScreen userScreen;
+    private AppScreen userScreen;
 
 
-    public UserLoginScreen(UserScreen userScreen) {
+    public UserLoginScreen(AppScreen userScreen) {
         this.userScreen = userScreen;
         initComponents();
     }
@@ -51,8 +53,12 @@ public class UserLoginScreen extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // show chat screen
-                userScreen.showChatScreen();
+                userScreen.showUserChatScreen();
             }
+        });
+
+        adminLogin.addActionListener((e)->{
+            userScreen.showAdminChatScreen();
         });
     }
 

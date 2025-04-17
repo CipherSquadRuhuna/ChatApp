@@ -1,20 +1,21 @@
 package client.gui.user;
 
-import client.gui.common.ChatScreen;
+import client.gui.admin.AdminChatScreen;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class UserScreen extends JFrame  {
+public class UserScreen extends JFrame {
 
     // user screens
-    private JPanel loginScreen;
-    private JPanel chatScreen;
-    private JPanel userProfileScreen;
+//    private final JPanel loginScreen;
+//    private final JPanel chatScreen;
+//    private final JPanel userProfileScreen;
+//    private final JPanel adminScreen;
 
     // layout
-    private JPanel containerPanel;
-    private CardLayout cardLayout;
+    private final JPanel containerPanel;
+    private final CardLayout cardLayout;
 
     public UserScreen() throws HeadlessException {
 
@@ -30,15 +31,16 @@ public class UserScreen extends JFrame  {
         containerPanel = new JPanel(cardLayout);
 
         // set screens
-        loginScreen = new UserLoginScreen(this);
+//        loginScreen = new UserLoginScreen(this);
 //        chatScreen = new UserChatScreen(this);
-        chatScreen = new ChatScreen();
-        userProfileScreen = new UserProfileScreen(this);
+//        userProfileScreen = new UserProfileScreen(this);
+//        adminScreen = new AdminChatScreen();
 
         // add panel to container
-        containerPanel.add(loginScreen, "Login");
-        containerPanel.add(chatScreen, "Chat");
-        containerPanel.add(userProfileScreen, "Profile");
+//        containerPanel.add(loginScreen, "Login");
+//        containerPanel.add(chatScreen, "Chat");
+//        containerPanel.add(userProfileScreen, "Profile");
+//        containerPanel.add(adminScreen, "Admin");
 
         add(containerPanel);
         showLoginScreen();
@@ -52,7 +54,12 @@ public class UserScreen extends JFrame  {
     public void showChatScreen() {
         cardLayout.show(containerPanel, "Chat");
     }
+
     public void showUserProfileScreen() {
         cardLayout.show(containerPanel, "Profile");
+    }
+
+    public void showAdminScreen() {
+        cardLayout.show(containerPanel, "Admin");
     }
 }

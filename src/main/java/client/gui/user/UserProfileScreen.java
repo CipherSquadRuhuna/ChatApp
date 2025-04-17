@@ -1,5 +1,6 @@
 package client.gui.user;
 
+import client.gui.common.AppScreen;
 import client.gui.user.common.UserMenu;
 
 import javax.swing.*;
@@ -9,9 +10,9 @@ public class UserProfileScreen extends UserMenu {
     private JLabel nameLabel;
     private JLabel usernameLabel;
     private JLabel nicknameLabel;
-    private final UserScreen screen;
+    private final AppScreen screen;
 
-    public UserProfileScreen(UserScreen screen) {
+    public UserProfileScreen(AppScreen screen) {
         super(screen);
         this.screen = screen;
         initialize();
