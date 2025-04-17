@@ -1,17 +1,13 @@
 package client;
 
-import client.gui.user.ChatHome;
-import server.MessageSubject;
+import client.gui.common.AppScreen;
 
 import javax.swing.*;
 
 public class Main {
     public static void main(String[] args) {
-       SwingUtilities.invokeLater(()->{
-           ChatHome chat = new ChatHome();
-           MessageSubject.getInstance().addObserver(chat);
-       });
-
-
+        SwingUtilities.invokeLater(() -> {
+            new AppScreen();
+        });
     }
 }
