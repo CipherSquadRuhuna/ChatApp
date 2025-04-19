@@ -7,6 +7,7 @@ import client.gui.admin.AdminUserList;
 import client.gui.user.UserChatScreen;
 import client.gui.user.UserLoginScreen;
 import client.gui.user.UserProfileScreen;
+import client.gui.user.UserRegisterScreen;
 
 import javax.swing.*;
 import java.awt.*;
@@ -22,6 +23,7 @@ public class AppScreen extends JFrame {
 
     //screens - user
     private final JPanel userChatScreen;
+    private final JPanel userRegisterScreen;
 
     //screens - admin
     private final JPanel adminChatScreen;
@@ -51,7 +53,9 @@ public class AppScreen extends JFrame {
 
         // set & add user screens
         userChatScreen = new UserChatScreen(this);
+        userRegisterScreen = new UserRegisterScreen(this);
         containerPanel.add(userChatScreen, "UserChat");
+        containerPanel.add(userRegisterScreen, "Register");
 
         //set & add admin screens
         adminChatScreen = new AdminChatScreen(this);
@@ -88,6 +92,10 @@ public class AppScreen extends JFrame {
 
     public void showUserProfileScreen() {
         cardLayout.show(containerPanel, "Profile");
+    }
+
+    public void showUserRegisterScreen() {
+        cardLayout.show(containerPanel, "Register");
     }
 
     public void showAdminUserListScreen() {
