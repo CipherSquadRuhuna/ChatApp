@@ -2,14 +2,17 @@ package common;
 
 import client.User;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class Chat {
+public class Chat implements Serializable {
     private int id;
     private String name;
     private boolean isStarted;
     private ArrayList<Message> messages;
     private ArrayList<User> subscribers;
+
+    private static final long serialVersionUID = 3L;
 
     public Chat(int id, String name) {
         this.id = id;

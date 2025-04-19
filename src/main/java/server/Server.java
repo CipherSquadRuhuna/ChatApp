@@ -2,17 +2,15 @@ package server;
 
 import client.User;
 import common.Chat;
+import common.Message;
 
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -20,36 +18,33 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     // list of online users
     private final List<User> onlineUsers = Collections.synchronizedList(new ArrayList<User>());
 
-    //Server socket
-    ServerSocket serverSocket = null;
-
     // list of chats with subscribers
     private final ArrayList<Chat> chatList = new ArrayList<>();
 
+    //Server socket
+    ServerSocket serverSocket = null;
+
     public Server() throws RemoteException {
         super();
-
     }
 
-    public void listenForUsers()  {
-        try{
+    public void listenForUsers() {
+        try {
             serverSocket = new ServerSocket(3001);
 
-            while(true){
+            while (true) {
                 Socket socket = serverSocket.accept();
                 // let new thread to handle the request
 
-                    User user = new User(2,"Asela");
-                    user.setSocket(socket);
+                User user = new User(2, "Asela");
+                user.setSocket(socket);
 
-                    try {
-                        addOnlineUser(user);
-                    } catch (RemoteException e) {
-                        throw new RuntimeException(e);
-                    }
-                    System.out.println(Thread.currentThread().getName());
+                try {
+                    addOnlineUser(user);
+                } catch (RemoteException e) {
+                    throw new RuntimeException(e);
+                }
 
-                // add to the client list
             }
 
             //System.out.println("Client connected.");
@@ -85,15 +80,15 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     //send message to all online user
-    public void sendBroadcastMessage(String message) throws RemoteException {
-        System.out.println("Sending broadcast message: " + message);
+    public void sendBroadcastMessage(Message message) throws RemoteException {
+        System.out.println("Sending broadcast message: " + message.getMessageText());
         for (User user : onlineUsers) {
             System.out.println("user: " + user.getSocket());
 
             // send message using socket
             try {
                 Socket socket = user.getSocket();
-                PrintWriter writer = new PrintWriter(socket.getOutputStream(),true);
+                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
                 writer.println(message);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -101,8 +96,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 //            user.setChatHome(user.getChatHome());
         }
     }
-
-
 
 
 }
