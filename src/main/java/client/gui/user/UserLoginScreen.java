@@ -39,6 +39,11 @@ public class UserLoginScreen extends JPanel {
         adminLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(adminLogin);
 
+        // user register button
+        JButton register = new JButton("Register");
+        register.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(register);
+
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
         usernameLabel.setMaximumSize(new Dimension(500,50));
@@ -61,6 +66,10 @@ public class UserLoginScreen extends JPanel {
 
         adminLogin.addActionListener((e)->{
             userScreen.showAdminChatScreen();
+        });
+
+        register.addActionListener((e)->{
+            userScreen.showUserRegisterScreen();
         });
     }
 
