@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class AdminChatScreen extends ChatScreen {
     public AdminChatScreen(AppScreen appScreen) {
-        super();
+        super(appScreen);
 
         AdminMenu menu = new AdminMenu(appScreen);
         add(menu.getMenuBar(), BorderLayout.NORTH);

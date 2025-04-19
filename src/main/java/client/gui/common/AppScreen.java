@@ -1,5 +1,6 @@
 package client.gui.common;
 
+import client.User;
 import client.gui.admin.AdminChatScreen;
 import client.gui.admin.AdminCreateNewChat;
 import client.gui.admin.AdminUserList;
@@ -27,6 +28,8 @@ public class AppScreen extends JFrame {
     private final JPanel adminUserListScreen;
     private final JPanel adminNewChatScreen;
 
+    // user data
+    private User user = null;
 
     public AppScreen() throws HeadlessException {
         // set screens
@@ -71,10 +74,15 @@ public class AppScreen extends JFrame {
     }
 
     public void showAdminChatScreen() {
+        // update user data
+        this.user = user;
+
         cardLayout.show(containerPanel, "AdminChat");
     }
 
-    public void showUserChatScreen() {
+    public void showUserChatScreen(User user) {
+        // update user data
+        this.user = user;
         cardLayout.show(containerPanel, "UserChat");
     }
 
@@ -88,5 +96,13 @@ public class AppScreen extends JFrame {
 
     public void showAdminNewChatScreen() {
         cardLayout.show(containerPanel, "AdminNewChat");
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
     }
 }

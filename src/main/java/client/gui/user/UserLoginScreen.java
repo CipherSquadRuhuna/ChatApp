@@ -1,5 +1,6 @@
 package client.gui.user;
 
+import client.User;
 import client.gui.common.AppScreen;
 
 import javax.swing.*;
@@ -12,7 +13,6 @@ public class UserLoginScreen extends JPanel {
     private JPasswordField password;
     private JButton login;
     private AppScreen userScreen;
-
 
     public UserLoginScreen(AppScreen userScreen) {
         this.userScreen = userScreen;
@@ -53,7 +53,9 @@ public class UserLoginScreen extends JPanel {
             @Override
             public void actionPerformed(ActionEvent e) {
                 // show chat screen
-                userScreen.showUserChatScreen();
+                // user should be set after login
+                User user = new User(1,"Asela");
+                userScreen.showUserChatScreen(user);
             }
         });
 

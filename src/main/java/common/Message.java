@@ -2,9 +2,11 @@ package common;
 
 import client.User;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class Message {
+public class Message implements Serializable {
+    private static final long serialVersionUID = 1L;
     private int id;
     private User user;
     private String messageText;
@@ -59,4 +61,18 @@ public class Message {
         this.chat = chat;
     }
 
+    //    @Override
+//    public String toString() {
+//        return "Message{" +
+//                "id=" + id +
+//                ", user=" + user +
+//                ", messageText='" + messageText + '\'' +
+//                ", date=" + date +
+//                ", chat=" + chat +
+//                '}';
+//    }
+
+    public String toString() {
+        return user.getNickname() + " " + messageText;
+    }
 }

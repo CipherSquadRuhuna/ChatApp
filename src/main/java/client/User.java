@@ -1,14 +1,14 @@
 package client;
 
-import client.gui.user.ChatHome;
-
+import java.io.Serializable;
 import java.net.Socket;
 
-public class User {
+public class User implements Serializable {
     private int id;
     private String nickname;
-    private Socket socket;
-    private ChatHome chatHome;
+    private transient Socket socket;
+
+    private static final long serialVersionUID = 2L;
 
     @Override
     public String toString() {
@@ -18,17 +18,11 @@ public class User {
                 '}';
     }
 
-    public ChatHome getChatHome() {
-        return chatHome;
-    }
 
     public Socket getSocket() {
         return socket;
     }
 
-    public void setChatHome(ChatHome chatHome) {
-        this.chatHome = chatHome;
-    }
 
     public void setSocket(Socket socket) {
         this.socket = socket;

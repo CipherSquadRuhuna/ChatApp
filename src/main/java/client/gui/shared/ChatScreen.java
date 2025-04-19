@@ -1,18 +1,22 @@
 package client.gui.shared;
 
+import client.gui.common.AppScreen;
 import client.gui.user.common.ChatHandler;
 import common.Chat;
+import common.Message;
 import server.ServerInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.rmi.Naming;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ChatScreen extends JPanel {
-
     // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
+    private final ArrayList<Message> messages = new ArrayList<>();
+    private final AppScreen screen;
 
     // swing component
     private JTextArea chatArea;
@@ -22,8 +26,10 @@ public class ChatScreen extends JPanel {
     private JLabel userMessageLabel;
     private JPanel rightPanel;
 
-    public ChatScreen() {
+    public ChatScreen(AppScreen screen) {
+        this.screen = screen;
         initialize();
+
     }
 
     private void initialize() {
@@ -45,9 +51,6 @@ public class ChatScreen extends JPanel {
         userMessageLabel = new JLabel(" ");
         rightPanel.add(userMessageLabel, BorderLayout.NORTH);
         add(rightPanel, BorderLayout.CENTER);
-
-        // load the menubar
-//        add(super.menuBar, BorderLayout.NORTH);
 
         // create chat handler
         ChatHandler chat = new ChatHandler(chatArea,userMessageLabel);
@@ -91,10 +94,14 @@ public class ChatScreen extends JPanel {
         // return if message empty
         if (message.isEmpty()) return;
 
+
+        // create message object
+        Message messageObj = new Message(1,screen.getUser(),message,new Date(),chats.getLast());
+//        System.out.println(messageObj);
+
         try {
             ServerInterface server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");
-            server.sendBroadcastMessage(message);
-//            chatArea.append("Me: " + message + "\n");
+            server.sendBroadcastMessage(messageObj);
             messageField.setText("");
         } catch (Exception e) {
             System.out.println(e.getMessage());
