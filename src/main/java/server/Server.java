@@ -5,7 +5,7 @@ import common.Chat;
 import common.Message;
 
 import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.rmi.RemoteException;
@@ -88,12 +88,11 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
             // send message using socket
             try {
                 Socket socket = user.getSocket();
-                PrintWriter writer = new PrintWriter(socket.getOutputStream(), true);
-                writer.println(message);
+                ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
+                out.writeObject(message);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-//            user.setChatHome(user.getChatHome());
         }
     }
 

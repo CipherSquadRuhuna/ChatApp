@@ -1,9 +1,10 @@
 package client.gui.user.common;
 
+import common.Message;
+
 import javax.swing.*;
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 
 public class ChatHandler implements Runnable {
@@ -15,22 +16,24 @@ public class ChatHandler implements Runnable {
         this.userMessageLabel = userMessageLabel;
     }
 
-    /**
-     * Runs this operation.
-     */
     @Override
     public void run() {
         try {
             Socket socket = new Socket("localhost", 3001);
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             while (true) {
-                String message = in.readLine();
-                chatArea.append(message + "\n");
+                ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
+
+                // we have message object now
+                Message message = (Message) in.readObject();
+
+                chatArea.append(message.getUser().getNickname() + ":"+message.getMessageText() + "\n");
                 userMessageLabel.setText("New message received");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
             userMessageLabel.setText("Connection error");
+        } catch (ClassNotFoundException e) {
+            System.out.println(e.getMessage());
         }
     }
 }
