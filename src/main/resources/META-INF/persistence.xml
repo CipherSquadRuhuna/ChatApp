@@ -5,6 +5,8 @@
              version="3.0">
     <persistence-unit name="default">
 
+
+
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/chat_application"/>

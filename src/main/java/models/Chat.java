@@ -12,6 +12,7 @@ import java.time.Instant;
 public class Chat {
     @Id
     @Column(name = "chat_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "title", nullable = false, length = 100)
