@@ -1,6 +1,8 @@
 package client.gui.user.common;
 
-import common.Message;
+
+
+import models.ChatMessage;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -24,9 +26,9 @@ public class ChatHandler implements Runnable {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
 
                 // we have message object now
-                Message message = (Message) in.readObject();
+                ChatMessage message = (ChatMessage) in.readObject();
 
-                chatArea.append(message.getUser().getNickname() + ":"+message.getMessageText() + "\n");
+                chatArea.append(message.getUser().getNickName() + ":"+message.getMessage() + "\n");
                 userMessageLabel.setText("New message received");
             }
         } catch (IOException e) {
