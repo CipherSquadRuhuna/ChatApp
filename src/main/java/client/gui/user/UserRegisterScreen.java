@@ -148,9 +148,14 @@ public class UserRegisterScreen extends JPanel {
         userService.saveUser(user);
 
         JOptionPane.showMessageDialog(this, "User registered successfully!");
+        screen.showLoginScreen();
 
     }
 
 
+
+
 }
+
+
 

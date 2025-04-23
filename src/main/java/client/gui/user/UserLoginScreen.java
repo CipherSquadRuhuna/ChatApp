@@ -23,39 +23,100 @@ public class UserLoginScreen extends JPanel {
     }
 
     private void initComponents() {
-        //set layout
+//        //set layout
+//        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+//
+//        username = new JTextField();
+//        username.setMaximumSize(new Dimension(500,50));
+//        username.setAlignmentX(Component.CENTER_ALIGNMENT);
+//
+//        password = new JPasswordField();
+//        password.setMaximumSize(new Dimension(500,50));
+//        password.setAlignmentX(Component.CENTER_ALIGNMENT);
+//
+//        login = new JButton("Login");
+//        login.setAlignmentX(Component.CENTER_ALIGNMENT);
+//
+//
+//        // user register button
+//        JButton register = new JButton("Register");
+//        register.setAlignmentX(Component.CENTER_ALIGNMENT);
+//        add(register);
+//
+//        JLabel usernameLabel = new JLabel("Username:");
+//        usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+//        usernameLabel.setMaximumSize(new Dimension(500,50));
+//
+//        add(usernameLabel);
+//        add(username);
+//        add(new JLabel("Password:"));
+//        add(password);
+//        add(login);
+
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        setBackground(Color.WHITE);
+        setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60)); // Padding
 
-        username = new JTextField();
-        username.setMaximumSize(new Dimension(500,50));
-        username.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Title
+        JLabel title = new JLabel("Chat App Login");
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+        title.setForeground(new Color(33, 33, 33));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(title);
 
-        password = new JPasswordField();
-        password.setMaximumSize(new Dimension(500,50));
-        password.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(Box.createRigidArea(new Dimension(0, 30)));
 
-        login = new JButton("Login");
-        login.setAlignmentX(Component.CENTER_ALIGNMENT);
-
-        // temporary button to access admin
-        JButton adminLogin = new JButton("Admin Login");
-        adminLogin.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(adminLogin);
-
-        // user register button
-        JButton register = new JButton("Register");
-        register.setAlignmentX(Component.CENTER_ALIGNMENT);
-        add(register);
-
+        // Username
         JLabel usernameLabel = new JLabel("Username:");
-        usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-        usernameLabel.setMaximumSize(new Dimension(500,50));
-
+        usernameLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(usernameLabel);
+
+        username = new JTextField(20);
+        username.setMaximumSize(new Dimension(300, 40));
+        username.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        username.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(username);
-        add(new JLabel("Password:"));
+
+        add(Box.createRigidArea(new Dimension(0, 20)));
+
+        // Password
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        passwordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        add(passwordLabel);
+
+        password = new JPasswordField(20);
+        password.setMaximumSize(new Dimension(300, 40));
+        password.setFont(new Font("SansSerif", Font.PLAIN, 16));
+        password.setAlignmentX(Component.CENTER_ALIGNMENT);
         add(password);
+
+        add(Box.createRigidArea(new Dimension(0, 30)));
+
+        // Login Button
+        login = new JButton("Login");
+        login.setPreferredSize(new Dimension(150, 40));
+        login.setMaximumSize(new Dimension(150, 40));
+        login.setAlignmentX(Component.CENTER_ALIGNMENT);
+        login.setBackground(new Color(33, 150, 243));
+        login.setForeground(Color.WHITE);
+        login.setFont(new Font("SansSerif", Font.BOLD, 16));
+        login.setFocusPainted(false);
         add(login);
+
+        add(Box.createRigidArea(new Dimension(0, 15)));
+
+        // Register Button
+        JButton register = new JButton("Register");
+        register.setPreferredSize(new Dimension(150, 40));
+        register.setMaximumSize(new Dimension(150, 40));
+        register.setAlignmentX(Component.CENTER_ALIGNMENT);
+        register.setBackground(new Color(76, 175, 80));
+        register.setForeground(Color.WHITE);
+        register.setFont(new Font("SansSerif", Font.BOLD, 16));
+        register.setFocusPainted(false);
+        add(register);
 
         login.addActionListener(new ActionListener() {
             @Override
