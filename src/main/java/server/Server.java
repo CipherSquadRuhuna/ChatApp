@@ -1,8 +1,8 @@
 package server;
 
 import client.User;
-import common.Chat;
-import common.Message;
+import models.ChatMessage;
+import models.Chat;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -80,8 +80,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     //send message to all online user
-    public void sendBroadcastMessage(Message message) throws RemoteException {
-        System.out.println("Sending broadcast message: " + message.getMessageText());
+    public void sendBroadcastMessage(ChatMessage message) throws RemoteException {
+        System.out.println("Sending broadcast message: " + message.getMessage());
         for (User user : onlineUsers) {
             System.out.println("user: " + user.getSocket());
 

@@ -1,10 +1,10 @@
 package server;
 
-import common.Message;
+import models.ChatMessage;
 
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 
 public interface ServerInterface extends Remote {
-    public void sendBroadcastMessage(Message message) throws RemoteException;
+    public void sendBroadcastMessage(ChatMessage message) throws RemoteException;
 }
