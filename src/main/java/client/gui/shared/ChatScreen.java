@@ -2,8 +2,13 @@ package client.gui.shared;
 
 import client.gui.common.AppScreen;
 import client.gui.user.common.ChatHandler;
-import common.Chat;
-import common.Message;
+import common.HibernateUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
+import models.Chat;
+import models.ChatMessage;
+import models.User;
 import server.ServerInterface;
 
 import javax.swing.*;
@@ -15,7 +20,7 @@ import java.util.Date;
 public class ChatScreen extends JPanel {
     // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
-    private final ArrayList<Message> messages = new ArrayList<>();
+    private final ArrayList<ChatMessage> messages = new ArrayList<>();
     private final AppScreen screen;
 
     // swing component
@@ -70,15 +75,16 @@ public class ChatScreen extends JPanel {
 
     private DefaultListModel<String> getChatList() {
 
-        // dummy logic - data should retrieve from server
-        chats.add(new Chat(1, "General"));
-        chats.add(new Chat(2, "Server"));
-        chats.add(new Chat(3, "Support"));
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        String query = "select c from Chat c";
+        TypedQuery<Chat> q = em.createQuery(query, Chat.class);
+        chats.addAll(q.getResultList());
+
 
         // Chat list
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (Chat chat : chats) {
-            listModel.addElement(chat.getName());
+            listModel.addElement(chat.getTitle());
         }
 
         return listModel;
@@ -94,10 +100,42 @@ public class ChatScreen extends JPanel {
         // return if message empty
         if (message.isEmpty()) return;
 
-
         // create message object
-        Message messageObj = new Message(1,screen.getUser(),message,new Date(),chats.getLast());
-//        System.out.println(messageObj);
+        ChatMessage messageObj = new ChatMessage();
+        messageObj.setMessage(message);
+
+        // get user to set for chat
+
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        User MessageSender = em.find(User.class, 1);
+        System.out.println(MessageSender);
+        messageObj.setUser(MessageSender);
+        em.close();
+
+        // get sample chat to assign
+        EntityManager em2 = HibernateUtil.getEmf().createEntityManager();
+        Chat chat = em2.find(Chat.class, 1);
+        messageObj.setChat(chat);
+        em2.close();
+
+        //set time
+        messageObj.setSentAt(new Date().toInstant());
+
+        // save message on a database
+        EntityManager em3 = HibernateUtil.getEmf().createEntityManager();
+        EntityTransaction et = null;
+
+        try {
+            et = em3.getTransaction();
+            et.begin();
+            em3.persist(messageObj);
+            et.commit();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            em3.close();
+
+        }
 
         try {
             ServerInterface server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");

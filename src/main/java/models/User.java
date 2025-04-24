@@ -3,19 +3,13 @@ package models;
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class User implements Serializable {
 
-//    @Id
-//    @GeneratedValue(strategy = GenerationType.IDENTITY) // Or AUTO if you're not using MySQL
-//    @Column(name = "user_id")
-//    private Integer id;
-
-
-    //update
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Let MySQL auto-generate it
     @Column(name = "user_id")
