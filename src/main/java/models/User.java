@@ -1,9 +1,6 @@
 package models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.io.Serializable;
@@ -12,9 +9,12 @@ import java.time.Instant;
 @Entity
 @Table(name = "users")
 public class User implements Serializable {
+
     @Id
-    @Column(name = "user_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Let MySQL auto-generate it
+    @Column(name = "user_id")
     private Integer id;
+
 
     @Column(name = "email", nullable = false)
     private String email;
@@ -113,6 +113,12 @@ public class User implements Serializable {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
 }
