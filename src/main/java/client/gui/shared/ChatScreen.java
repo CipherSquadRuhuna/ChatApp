@@ -22,6 +22,7 @@ public class ChatScreen extends JPanel {
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
     private final AppScreen screen;
+    private Chat activeChat;
 
     // swing component
     private JTextArea chatArea;
@@ -78,10 +79,22 @@ public class ChatScreen extends JPanel {
                 if (selectedIndex >= 0 && selectedIndex < chats.size()) {
                     Chat selectedChat = chats.get(selectedIndex);
                     int chatId = selectedChat.getId();
+                    // get active chat from database
+                    EntityManager em = HibernateUtil.getEmf().createEntityManager();
+                    Chat chatEntity = em.find(Chat.class,chatId);
+                    setActiveChat(chatEntity);
                     loadChatMessages(chatId);
                 }
             }
         });
+    }
+
+    public Chat getActiveChat() {
+        return activeChat;
+    }
+
+    public void setActiveChat(Chat activeChat) {
+        this.activeChat = activeChat;
     }
 
     private DefaultListModel<String> getChatList() {
@@ -119,15 +132,12 @@ public class ChatScreen extends JPanel {
 
         EntityManager em = HibernateUtil.getEmf().createEntityManager();
         User MessageSender = em.find(User.class, 1);
-        System.out.println(MessageSender);
+
         messageObj.setUser(MessageSender);
         em.close();
 
-        // get sample chat to assign
-        EntityManager em2 = HibernateUtil.getEmf().createEntityManager();
-        Chat chat = em2.find(Chat.class, 1);
-        messageObj.setChat(chat);
-        em2.close();
+        // set active chat to message owner
+        messageObj.setChat(activeChat);
 
         //set time
         messageObj.setSentAt(new Date().toInstant());
