@@ -69,7 +69,7 @@ public class UserRegisterScreen extends JPanel {
         JButton browseButton = new JButton("Browse");
 
         JPanel profilePicPanel = new JPanel(new BorderLayout(5, 0));
-        profilePicPanel.add(profilePicLabel, BorderLayout.CENTER);
+        profilePicPanel.add(profilePicLabel , BorderLayout.CENTER);
         profilePicPanel.add(browseButton, BorderLayout.EAST);
 
         browseButton.addActionListener(e -> {
@@ -143,24 +143,11 @@ public class UserRegisterScreen extends JPanel {
         user.setNickName(nickname);
         user.setProfilePicturePath(profilePicPath);
 
-        LocalDateTime localDateTime = LocalDateTime.now();
-        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
 
-
-
-
-
-
+        UserService userService =new UserService();
+        userService.saveUser(user);
 
         JOptionPane.showMessageDialog(this, "User registered successfully!");
-
-
-
-
-
-
-
-
 
     }
 

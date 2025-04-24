@@ -1,9 +1,6 @@
 package models;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
 
 import java.time.Instant;
@@ -11,9 +8,19 @@ import java.time.Instant;
 @Entity
 @Table(name = "users")
 public class User {
+
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY) // Or AUTO if you're not using MySQL
+//    @Column(name = "user_id")
+//    private Integer id;
+
+
+    //update
     @Id
-    @Column(name = "user_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY) // Let MySQL auto-generate it
+    @Column(name = "user_id")
     private Integer id;
+
 
     @Column(name = "email", nullable = false)
     private String email;
@@ -112,6 +119,12 @@ public class User {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
 
 }

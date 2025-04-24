@@ -1,25 +1,35 @@
 package Utility;
 
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 import models.User;
+import jakarta.persistence.*;
+import org.hibernate.SessionFactory;
 
 public class UserService {
-    public static void saveUser(User user) {
-        EntityManager em = JPAUtil.getEntityManager();
-        EntityTransaction tx = em.getTransaction();
+
+    private EntityManagerFactory emf;
+
+    public UserService() {
+        emf = Persistence.createEntityManagerFactory("default");
+    }
+
+    public void saveUser(User user) {
+        EntityManager em = emf.createEntityManager();
+
+//        SessionFactory factory= BuidSessionFactory();
         try {
-            tx.begin();
+            em.getTransaction().begin();
             em.persist(user);
-            tx.commit();
+            em.getTransaction().commit();
         } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
+            em.getTransaction().rollback();
             e.printStackTrace();
         } finally {
             em.close();
         }
+    }
+
+    public void close() {
+        emf.close();
     }
 }
 
