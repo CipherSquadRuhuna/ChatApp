@@ -1,15 +1,17 @@
 package client;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.net.Socket;
 
-public class User implements Serializable {
+public class UserClient implements Serializable {
+    @Serial
     private static final long serialVersionUID = 2L;
     private final int id;
     private final String nickname;
     private transient Socket socket;
 
-    public User(int id, String nickname) {
+    public UserClient(int id, String nickname) {
         this.id = id;
         this.nickname = nickname;
     }

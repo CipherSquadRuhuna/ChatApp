@@ -1,6 +1,6 @@
 package server;
 
-import client.User;
+import client.UserClient;
 import models.ChatMessage;
 
 import java.io.IOException;
@@ -15,7 +15,7 @@ import java.util.List;
 
 public class Server extends UnicastRemoteObject implements ServerInterface {
     // list of online users
-    private final List<User> onlineUsers = Collections.synchronizedList(new ArrayList<>());
+    private final List<UserClient> onlineUsers = Collections.synchronizedList(new ArrayList<>());
 
     // control server running status
     volatile boolean running = true;
@@ -38,7 +38,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                     Socket socket = serverSocket.accept();
 
 
-                    User user = new User(2, "Asela");
+                    UserClient user = new UserClient(2, "Asela");
                     user.setSocket(socket);
                     addOnlineUser(user);
                 } catch (IOException e) {
@@ -61,7 +61,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     }
 
     // when new user login to the chat application
-    public void addOnlineUser(User user) throws RemoteException {
+    public void addOnlineUser(UserClient user) throws RemoteException {
         onlineUsers.add(user);
         System.out.println("user added");
     }
@@ -69,7 +69,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     //send message to all online user
     public void sendBroadcastMessage(ChatMessage message) throws RemoteException {
         System.out.println("Sending broadcast message: " + message.getMessage());
-        for (User user : onlineUsers) {
+        for (UserClient user : onlineUsers) {
             System.out.println("user: " + user.getSocket());
 
             // send message using socket

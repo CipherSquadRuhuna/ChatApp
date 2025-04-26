@@ -1,6 +1,6 @@
 package server;
 
-import client.User;
+import client.UserClient;
 import models.ChatMessage;
 
 import java.rmi.Remote;
@@ -11,5 +11,5 @@ public interface ServerInterface extends Remote {
 
     void listenForUsers() throws RemoteException;
 
-    void addOnlineUser(User user) throws RemoteException;
+    void addOnlineUser(UserClient user) throws RemoteException;
 }
