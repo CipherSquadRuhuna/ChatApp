@@ -22,6 +22,7 @@ public class ChatScreen extends JPanel {
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
     private final AppScreen screen;
+    private Chat activeChat;
 
     // swing component
     private JTextArea chatArea;
@@ -71,6 +72,29 @@ public class ChatScreen extends JPanel {
         sendButton.addActionListener(( e) -> {
             sendMessage(messageField.getText().trim());
         });
+
+        chatList.addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                int selectedIndex = chatList.getSelectedIndex();
+                if (selectedIndex >= 0 && selectedIndex < chats.size()) {
+                    Chat selectedChat = chats.get(selectedIndex);
+                    int chatId = selectedChat.getId();
+                    // get active chat from database
+                    EntityManager em = HibernateUtil.getEmf().createEntityManager();
+                    Chat chatEntity = em.find(Chat.class,chatId);
+                    setActiveChat(chatEntity);
+                    loadChatMessages(chatId);
+                }
+            }
+        });
+    }
+
+    public Chat getActiveChat() {
+        return activeChat;
+    }
+
+    public void setActiveChat(Chat activeChat) {
+        this.activeChat = activeChat;
     }
 
     private DefaultListModel<String> getChatList() {
@@ -108,15 +132,12 @@ public class ChatScreen extends JPanel {
 
         EntityManager em = HibernateUtil.getEmf().createEntityManager();
         User MessageSender = em.find(User.class, 1);
-        System.out.println(MessageSender);
+
         messageObj.setUser(MessageSender);
         em.close();
 
-        // get sample chat to assign
-        EntityManager em2 = HibernateUtil.getEmf().createEntityManager();
-        Chat chat = em2.find(Chat.class, 1);
-        messageObj.setChat(chat);
-        em2.close();
+        // set active chat to message owner
+        messageObj.setChat(activeChat);
 
         //set time
         messageObj.setSentAt(new Date().toInstant());
@@ -163,5 +184,32 @@ public class ChatScreen extends JPanel {
         inputPanel.add(sendButton, BorderLayout.EAST);
         inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         rightPanel.add(inputPanel, BorderLayout.SOUTH);
+    }
+
+    private void loadChatMessages(int chatId) {
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        String query = "select m from ChatMessage m where m.chat.id=:chatId";
+        TypedQuery<ChatMessage> q = em.createQuery(query, ChatMessage.class);
+        System.out.println("Loading Chat Messages for " + chatId);
+        q.setParameter("chatId", chatId);
+
+        // clear old list
+        messages.clear();
+        messages.addAll(q.getResultList());
+
+//        print for testing
+        for (ChatMessage message : messages) {
+            System.out.println(message.getMessage());
+        }
+
+        displayChatMessages();
+    }
+
+    private void displayChatMessages() {
+        // clear chat ares
+        chatArea.setText("");
+        for (ChatMessage message : messages) {
+            chatArea.append(message.getUser().getNickName() + ":"+message.getMessage() + "\n");
+        }
     }
 }
