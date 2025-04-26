@@ -5,13 +5,16 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
 @Table(name = "chats")
-public class Chat {
+public class Chat implements Serializable {
+    private static final long serialVersionUID = 1L;
     @Id
     @Column(name = "chat_id", nullable = false)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "title", nullable = false, length = 100)

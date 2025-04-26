@@ -5,11 +5,12 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
 @Table(name = "user_chats")
-public class UserChat {
+public class UserChat implements Serializable {
     @EmbeddedId
     private UserChatId id;
 
