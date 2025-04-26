@@ -8,7 +8,7 @@ import java.awt.*;
 
 public class UserChatScreen extends ChatScreen {
     public UserChatScreen(AppScreen appScreen) {
-        super(appScreen);
+        super();
         UserMenu menu = new UserMenu(appScreen);
         add(menu.getMenuBar(), BorderLayout.NORTH);
     }

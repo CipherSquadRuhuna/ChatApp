@@ -1,6 +1,5 @@
 package client.gui.shared;
 
-import client.gui.common.AppScreen;
 import client.gui.user.common.ChatHandler;
 import common.HibernateUtil;
 import jakarta.persistence.EntityManager;
@@ -21,55 +20,53 @@ public class ChatScreen extends JPanel {
     // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
-    private final AppScreen screen;
     private Chat activeChat;
 
-    // swing component
-    private JTextArea chatArea;
-    private JScrollPane chatScrollPane;
-    private JTextField messageField;
-    private JButton sendButton;
-    private JLabel userMessageLabel;
-    private JPanel rightPanel;
+    // shared swing component among methods
+    private final JTextArea chatArea = new JTextArea();
+    private final JTextField messageField = new JTextField();
+    private final JButton sendButton = new JButton("Send");
+    private final JPanel rightPanel = new JPanel(new BorderLayout());;
+    private final JLabel userMessageLabel = new JLabel(" ");
 
-    public ChatScreen(AppScreen screen) {
-        this.screen = screen;
+    // chat list
+    private JList<String> chatList;
+
+    public ChatScreen() {
         initialize();
-
     }
 
+    /**
+     * Loading all necessary components for ChatScreen
+     */
     private void initialize() {
         setLayout(new BorderLayout());
 
-        JList<String> chatList = new JList<>(getChatList());
-        displayChats(chatList);
+        // display chat list
+        displayChats();
 
-        // Right Panel for Chat
-        rightPanel = new JPanel(new BorderLayout());
-
-        // chat display ares
+        // chat content display area
         showChatDisplayArea();
 
         // Message Input area
         showMessageSendArea();
 
         //  status label
-        userMessageLabel = new JLabel(" ");
-        rightPanel.add(userMessageLabel, BorderLayout.NORTH);
-        add(rightPanel, BorderLayout.CENTER);
+        showChatStatusLabel();
 
         // create chat handler
-        ChatHandler chat = new ChatHandler(chatArea,userMessageLabel);
+        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel);
         Thread chatThread = new Thread(chat);
         chatThread.start();
 
         // send message when press enter
+
         messageField.addActionListener((e) -> {
             sendMessage(messageField.getText().trim());
         });
 
         // Send message when press button
-        sendButton.addActionListener(( e) -> {
+        sendButton.addActionListener((e) -> {
             sendMessage(messageField.getText().trim());
         });
 
@@ -81,9 +78,15 @@ public class ChatScreen extends JPanel {
                     int chatId = selectedChat.getId();
                     // get active chat from database
                     EntityManager em = HibernateUtil.getEmf().createEntityManager();
-                    Chat chatEntity = em.find(Chat.class,chatId);
+                    Chat chatEntity = em.find(Chat.class, chatId);
                     setActiveChat(chatEntity);
+
+
+
                     loadChatMessages(chatId);
+
+                    // show to message send area if only chat is selected
+//                    showMessageSendArea();
                 }
             }
         });
@@ -95,9 +98,14 @@ public class ChatScreen extends JPanel {
 
     public void setActiveChat(Chat activeChat) {
         this.activeChat = activeChat;
+
+
+
     }
 
-    private DefaultListModel<String> getChatList() {
+
+
+    private DefaultListModel<String> loadChatList() {
 
         EntityManager em = HibernateUtil.getEmf().createEntityManager();
         String query = "select c from Chat c";
@@ -114,7 +122,12 @@ public class ChatScreen extends JPanel {
         return listModel;
     }
 
-    private void displayChats(JList<String> chatList) {
+    private void displayChats() {
+        // add right panel to the screen
+        add(rightPanel, BorderLayout.CENTER);
+
+        // load chats from database
+        chatList = new JList<>(loadChatList());
         JScrollPane chatListScrollPane = new JScrollPane(chatList);
         chatListScrollPane.setPreferredSize(new Dimension(150, 0));
         add(chatListScrollPane, BorderLayout.WEST);
@@ -167,19 +180,21 @@ public class ChatScreen extends JPanel {
         }
     }
 
-    private void showChatDisplayArea(){
+    private void showChatDisplayArea() {
         // Chat Display Area
-        chatArea = new JTextArea();
+//        chatArea = new JTextArea();
         chatArea.setEditable(false);
         chatArea.setLineWrap(true);
-        chatScrollPane = new JScrollPane(chatArea);
+        JScrollPane chatScrollPane = new JScrollPane(chatArea);
         rightPanel.add(chatScrollPane, BorderLayout.CENTER);
     }
 
-    private void showMessageSendArea(){
+    private void showChatStatusLabel(){
+        rightPanel.add(userMessageLabel, BorderLayout.NORTH);
+    }
+
+    private void showMessageSendArea() {
         JPanel inputPanel = new JPanel(new BorderLayout());
-        messageField = new JTextField();
-        sendButton = new JButton("Send");
         inputPanel.add(messageField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
         inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -209,7 +224,12 @@ public class ChatScreen extends JPanel {
         // clear chat ares
         chatArea.setText("");
         for (ChatMessage message : messages) {
-            chatArea.append(message.getUser().getNickName() + ":"+message.getMessage() + "\n");
+            chatArea.append(message.getUser().getNickName() + ":" + message.getMessage() + "\n");
         }
     }
+
+    private void showChatList(){
+        chatList = new JList<>(loadChatList());
+    }
+
 }
