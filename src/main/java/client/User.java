@@ -4,11 +4,15 @@ import java.io.Serializable;
 import java.net.Socket;
 
 public class User implements Serializable {
-    private int id;
-    private String nickname;
+    private static final long serialVersionUID = 2L;
+    private final int id;
+    private final String nickname;
     private transient Socket socket;
 
-    private static final long serialVersionUID = 2L;
+    public User(int id, String nickname) {
+        this.id = id;
+        this.nickname = nickname;
+    }
 
     @Override
     public String toString() {
@@ -18,34 +22,11 @@ public class User implements Serializable {
                 '}';
     }
 
-
     public Socket getSocket() {
         return socket;
     }
 
-
     public void setSocket(Socket socket) {
         this.socket = socket;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
-
-    public String getNickname() {
-        return nickname;
-    }
-
-    public void setNickname(String nickname) {
-        this.nickname = nickname;
-    }
-
-    public User(int id, String nickname) {
-        this.id = id;
-        this.nickname = nickname;
     }
 }

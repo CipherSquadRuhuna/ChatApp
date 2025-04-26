@@ -1,7 +1,8 @@
 package client.gui.user;
 
-import client.User;
 import client.gui.common.AppScreen;
+import common.HibernateUtil;
+import jakarta.persistence.EntityManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -57,10 +58,16 @@ public class UserLoginScreen extends JPanel {
         login.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // show chat screen
-                // user should be set after login
-                User user = new User(1,"Asela");
-                userScreen.showUserChatScreen(user);
+
+                // get sample user for testing purpose
+                EntityManager em = HibernateUtil.getEmf().createEntityManager();
+                models.User SampleUser = em.find(models.User.class, 1);
+
+                // set the login user status
+                userScreen.setUser(SampleUser);
+
+                // show to chat screen
+                userScreen.showUserChatScreen();
             }
         });
 
