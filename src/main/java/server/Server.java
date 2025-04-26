@@ -1,8 +1,8 @@
 package server;
 
 import client.User;
-import models.ChatMessage;
 import models.Chat;
+import models.ChatMessage;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -28,7 +28,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         super();
     }
 
-    public void listenForUsers() {
+    public void listenForUsers() throws RemoteException {
         try {
             serverSocket = new ServerSocket(3001);
 
