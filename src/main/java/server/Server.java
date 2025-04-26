@@ -1,7 +1,6 @@
 package server;
 
 import client.User;
-import models.Chat;
 import models.ChatMessage;
 
 import java.io.IOException;
@@ -16,10 +15,10 @@ import java.util.List;
 
 public class Server extends UnicastRemoteObject implements ServerInterface {
     // list of online users
-    private final List<User> onlineUsers = Collections.synchronizedList(new ArrayList<User>());
+    private final List<User> onlineUsers = Collections.synchronizedList(new ArrayList<>());
 
-    // list of chats with subscribers
-    private final ArrayList<Chat> chatList = new ArrayList<>();
+    // control server running status
+    volatile boolean running = true;
 
     //Server socket
     ServerSocket serverSocket = null;
@@ -30,21 +29,29 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 
     public void listenForUsers() throws RemoteException {
         try {
+            // show server running log
+            System.out.println("Listening for users...");
             serverSocket = new ServerSocket(3001);
 
             while (true) {
-                Socket socket = serverSocket.accept();
-                // let new thread to handle the request
-
-                User user = new User(2, "Asela");
-                user.setSocket(socket);
-
                 try {
-                    addOnlineUser(user);
-                } catch (RemoteException e) {
-                    throw new RuntimeException(e);
-                }
+                    Socket socket = serverSocket.accept();
 
+
+                    User user = new User(2, "Asela");
+                    user.setSocket(socket);
+                    addOnlineUser(user);
+                } catch (IOException e) {
+                    if (!running) {
+                        System.out.println("Server shutting down...");
+                        break;
+                    }
+                    System.out.println("IOException: " + e.getMessage());
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    System.out.println("Other Exception: " + e.getMessage());
+                    e.printStackTrace();
+                }
             }
 
             //System.out.println("Client connected.");
@@ -57,26 +64,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     public void addOnlineUser(User user) throws RemoteException {
         onlineUsers.add(user);
         System.out.println("user added");
-    }
-
-    // when user logout from the application
-    public void removeOnlineUser(User user) throws RemoteException {
-        onlineUsers.remove(user);
-    }
-
-    // add new chat
-    public void addChat(Chat chat) throws RemoteException {
-        chatList.add(chat);
-    }
-
-    // delete chat
-    public void removeChat(Chat chat) throws RemoteException {
-        chatList.remove(chat);
-    }
-
-    // get all chats
-    public ArrayList<Chat> getChatList() throws RemoteException {
-        return chatList;
     }
 
     //send message to all online user
