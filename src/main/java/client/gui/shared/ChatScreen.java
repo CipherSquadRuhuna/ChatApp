@@ -22,6 +22,8 @@ public class ChatScreen extends JPanel {
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
     private Chat activeChat;
 
+    private User loginUser;
+
     // shared swing component among methods
     private final JTextArea chatArea = new JTextArea();
     private final JTextField messageField = new JTextField();
@@ -32,8 +34,18 @@ public class ChatScreen extends JPanel {
     // chat list
     private JList<String> chatList;
 
-    public ChatScreen() {
+    public ChatScreen(User loginUser) {
         initialize();
+
+        // make sure user is correct before start
+        if(loginUser == null) {
+            System.out.println("Login user is null");
+            throw new IllegalArgumentException("Login user is null");
+        }
+
+        System.out.println("Login user is " + loginUser);
+
+        this.loginUser = loginUser;
     }
 
     /**
@@ -141,13 +153,9 @@ public class ChatScreen extends JPanel {
         ChatMessage messageObj = new ChatMessage();
         messageObj.setMessage(message);
 
-        // get user to set for chat
 
-        EntityManager em = HibernateUtil.getEmf().createEntityManager();
-        User MessageSender = em.find(User.class, 1);
-
-        messageObj.setUser(MessageSender);
-        em.close();
+        // set the user who send the message
+        messageObj.setUser(loginUser);
 
         // set active chat to message owner
         messageObj.setChat(activeChat);
