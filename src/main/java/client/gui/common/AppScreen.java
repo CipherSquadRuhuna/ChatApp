@@ -92,6 +92,11 @@ public class AppScreen extends JFrame {
 
     public void showUserProfileScreen() {
         cardLayout.show(containerPanel, "Profile");
+        UserProfileScreen profileScreen = new UserProfileScreen(this);
+        profileScreen.loadUser(user);
+        setContentPane(profileScreen);
+        revalidate();
+        repaint();
     }
 
     public void showUserRegisterScreen() {

@@ -5,10 +5,20 @@ import java.net.Socket;
 
 public class User implements Serializable {
     private int id;
+    private String name;
+    private String username;
     private String nickname;
     private transient Socket socket;
 
     private static final long serialVersionUID = 2L;
+
+    public User(int id, String name, String username, String nickname) {
+        this.id = id;
+        this.name = name;
+        this.username = username;
+        this.nickname = nickname;
+    }
+
 
     @Override
     public String toString() {
@@ -35,6 +45,24 @@ public class User implements Serializable {
     public void setId(int id) {
         this.id = id;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
 
     public String getNickname() {
         return nickname;
