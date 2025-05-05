@@ -3,7 +3,7 @@ package client;
 import java.io.Serializable;
 import java.net.Socket;
 
-public class User implements Serializable {
+public class UserClient implements Serializable {
     private int id;
     private String name;
     private String username;
@@ -12,7 +12,7 @@ public class User implements Serializable {
 
     private static final long serialVersionUID = 2L;
 
-    public User(int id, String name, String username, String nickname) {
+    public UserClient(int id, String name, String username, String nickname) {
         this.id = id;
         this.name = name;
         this.username = username;
@@ -72,7 +72,7 @@ public class User implements Serializable {
         this.nickname = nickname;
     }
 
-    public User(int id, String nickname) {
+    public UserClient(int id, String nickname) {
         this.id = id;
         this.nickname = nickname;
     }

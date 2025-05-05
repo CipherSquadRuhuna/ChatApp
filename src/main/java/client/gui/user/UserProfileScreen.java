@@ -1,6 +1,6 @@
 package client.gui.user;
 
-import client.User;
+import models.User;
 import client.gui.common.AppScreen;
 import client.gui.user.common.UserMenu;
 
@@ -92,9 +92,9 @@ public class UserProfileScreen extends UserMenu {
         this.user = user;
 
         // Display info
-        displayNameLabel.setText("Name: " + user.getName());
+
         displayUsernameLabel.setText("Username: " + user.getUsername());
-        displayNicknameLabel.setText("Nickname: " + user.getNickname());
+        displayNicknameLabel.setText("Nickname: " + user.getNickName());
 
         // Set values in fields
         nameField.setText("");
@@ -109,9 +109,8 @@ public class UserProfileScreen extends UserMenu {
                 String newUsername = usernameField.getText().trim();
                 String newNickname = nicknameField.getText().trim();
 
-                user.setName(newName);
                 user.setUsername(newUsername);
-                user.setNickname(newNickname);
+                user.setNickName(newNickname);
 
                 // Update display labels
                 displayNameLabel.setText("Name: " + newName);
@@ -140,9 +139,8 @@ public class UserProfileScreen extends UserMenu {
             FileWriter writer = new FileWriter("users.txt", true); // true = append mode
 
             // Format: Name, Username, Nickname
-            writer.write("Name: " + user.getName() + ", ");
             writer.write("Username: " + user.getUsername() + ", ");
-            writer.write("Nickname: " + user.getNickname() + "\n");
+            writer.write("Nickname: " + user.getNickName() + "\n");
 
             writer.close();
         } catch (IOException e) {
