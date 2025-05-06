@@ -20,17 +20,14 @@ public class ChatScreen extends JPanel {
     // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
-    private Chat activeChat;
-
-    private User loginUser;
-
     // shared swing component among methods
     private final JTextArea chatArea = new JTextArea();
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
-    private final JPanel rightPanel = new JPanel(new BorderLayout());;
+    private final JPanel rightPanel = new JPanel(new BorderLayout());
     private final JLabel userMessageLabel = new JLabel(" ");
-
+    private Chat activeChat;
+    private final User loginUser;
     // chat list
     private JList<String> chatList;
 
@@ -38,7 +35,7 @@ public class ChatScreen extends JPanel {
         initialize();
 
         // make sure user is correct before start
-        if(loginUser == null) {
+        if (loginUser == null) {
             System.out.println("Login user is null");
             throw new IllegalArgumentException("Login user is null");
         }
@@ -94,7 +91,6 @@ public class ChatScreen extends JPanel {
                     setActiveChat(chatEntity);
 
 
-
                     loadChatMessages(chatId);
 
                     // show to message send area if only chat is selected
@@ -110,17 +106,12 @@ public class ChatScreen extends JPanel {
 
     public void setActiveChat(Chat activeChat) {
         this.activeChat = activeChat;
-
-
-
     }
-
-
 
     private DefaultListModel<String> loadChatList() {
 
         EntityManager em = HibernateUtil.getEmf().createEntityManager();
-        String query = "select c from Chat c";
+        String query = "select c from Chat c ";
         TypedQuery<Chat> q = em.createQuery(query, Chat.class);
         chats.addAll(q.getResultList());
 
@@ -197,7 +188,7 @@ public class ChatScreen extends JPanel {
         rightPanel.add(chatScrollPane, BorderLayout.CENTER);
     }
 
-    private void showChatStatusLabel(){
+    private void showChatStatusLabel() {
         rightPanel.add(userMessageLabel, BorderLayout.NORTH);
     }
 
@@ -236,7 +227,7 @@ public class ChatScreen extends JPanel {
         }
     }
 
-    private void showChatList(){
+    private void showChatList() {
         chatList = new JList<>(loadChatList());
     }
 
