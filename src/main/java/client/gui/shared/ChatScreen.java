@@ -5,14 +5,13 @@ import common.HibernateUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
-import models.Chat;
-import models.ChatMessage;
-import models.User;
+import models.*;
 import server.ServerInterface;
 
 import javax.swing.*;
 import java.awt.*;
 import java.rmi.Naming;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -20,14 +19,13 @@ public class ChatScreen extends JPanel {
     // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
-
-    // shared swing component among methods
-    private final JTextArea chatArea = new JTextArea();
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
     private final JPanel rightPanel = new JPanel(new BorderLayout());
     private final JLabel userMessageLabel = new JLabel(" ");
     private final User loginUser;
+    // shared swing component among methods
+    private JTextArea chatArea = new JTextArea();
     private Chat activeChat;
 
     // chat list
@@ -50,14 +48,11 @@ public class ChatScreen extends JPanel {
     private void initialize() {
         setLayout(new BorderLayout());
 
+        // add right panel to the screen
+        add(rightPanel, BorderLayout.CENTER);
+
         // display chat list
         displayChats();
-
-        // chat content display area
-        showChatDisplayArea();
-
-        // Message Input area
-        showMessageSendArea();
 
         //  status label
         showChatStatusLabel();
@@ -100,9 +95,17 @@ public class ChatScreen extends JPanel {
 
                     // no any subscription found
                     if (count == 0) {
-                        displaySubscribeButton();
+                        displaySubscribeToChat();
                         return;
                     }
+
+                    // check chat start
+                    if(activeChat.getStartTime() == null) {
+                        displayChatNotStartedMessage();
+                        return;
+                    }
+
+                    showChatDisplayArea();
                     loadChatMessages(chatId);
                 }
             }
@@ -135,9 +138,6 @@ public class ChatScreen extends JPanel {
     }
 
     private void displayChats() {
-        // add right panel to the screen
-        add(rightPanel, BorderLayout.CENTER);
-
         // load chats from database
         chatList = new JList<>(loadChatList());
         JScrollPane chatListScrollPane = new JScrollPane(chatList);
@@ -189,12 +189,18 @@ public class ChatScreen extends JPanel {
     }
 
     private void showChatDisplayArea() {
+        rightPanel.removeAll();
+        rightPanel.revalidate();
+        rightPanel.repaint();
+
         // Chat Display Area
-//        chatArea = new JTextArea();
+        chatArea = new JTextArea();
         chatArea.setEditable(false);
         chatArea.setLineWrap(true);
         JScrollPane chatScrollPane = new JScrollPane(chatArea);
         rightPanel.add(chatScrollPane, BorderLayout.CENTER);
+
+        showMessageSendArea();
     }
 
     private void showChatStatusLabel() {
@@ -228,20 +234,90 @@ public class ChatScreen extends JPanel {
         displayChatMessages();
     }
 
-    private void displaySubscribeButton() {
-        chatArea.setText("You should subscribe to the chat");
-        chatArea.append("\n");
+    private void clearRightPanel() {
+        rightPanel.removeAll();
+        rightPanel.revalidate();
+        rightPanel.repaint();
+    }
+
+    private void displayChatNotStartedMessage() {
+        //clear right panel
+        clearRightPanel();
+
+        JPanel chatInfoPanel = new JPanel();
+        chatInfoPanel.setLayout(new BoxLayout(chatInfoPanel, BoxLayout.Y_AXIS));
+
+        JLabel messageLabel = new JLabel("Chat not started.. Wait until admin start the chat");
+        messageLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        chatInfoPanel.add(messageLabel);
+
+        rightPanel.add(chatInfoPanel, BorderLayout.CENTER);
+    }
+
+    private void displaySubscribeToChat() {
+
+        clearRightPanel();
+
+        JPanel subscribePanel = new JPanel();
+        subscribePanel.setLayout(new BoxLayout(subscribePanel, BoxLayout.Y_AXIS));
+
+        JLabel subscribeLabel = new JLabel("Subscribe to chat");
+        subscribeLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         JButton subscribeButton = new JButton("Subscribe");
-        subscribeButton.addActionListener((e) -> {
-            // subscribe logic
+        subscribeButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        subscribePanel.add(Box.createVerticalStrut(10)); // spacing
+        subscribePanel.add(subscribeLabel);
+        subscribePanel.add(Box.createVerticalStrut(10)); // spacing
+        subscribePanel.add(subscribeButton);
+
+
+        rightPanel.add(subscribePanel, BorderLayout.CENTER);
+
+        subscribeButton.addActionListener((_) -> {
+
+            try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
+
+                EntityTransaction transaction = et.getTransaction();
+                transaction.begin();
+
+                UserChatId userChatId = new UserChatId();
+                userChatId.setUserId(loginUser.getId());
+                userChatId.setChatId(activeChat.getId());
+
+                UserChat newChatSubscription = new UserChat();
+                newChatSubscription.setId(userChatId);
+                newChatSubscription.setChat(activeChat);
+                newChatSubscription.setUser(loginUser);
+                newChatSubscription.setSubscribedAt(Instant.now());
+
+                et.persist(newChatSubscription);
+                transaction.commit();
+
+                if(activeChat.getStartTime() == null) {
+                    displayChatNotStartedMessage();
+                    return;
+                }
+
+                showChatDisplayArea();
+                loadChatMessages(activeChat.getId());
+            } catch (Exception ex) {
+                System.out.println("Unable to subscribe to chat");
+                System.out.println(ex.getMessage());
+            }
+
         });
 
     }
 
     private void displayChatMessages() {
-        // clear chat ares
+        // clear chat areas
         chatArea.setText("");
+
+        // show chat start time
+        chatArea.append("Chat started at:" + activeChat.getStartTime() + "\n");
+
         for (ChatMessage message : messages) {
             chatArea.append(message.getUser().getNickName() + ":" + message.getMessage() + "\n");
         }
