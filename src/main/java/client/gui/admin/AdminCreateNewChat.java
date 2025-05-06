@@ -74,7 +74,6 @@ public class AdminCreateNewChat extends JPanel {
     private void createChat(String chatName) {
         Chat chat = new Chat();
         chat.setTitle(chatName);
-        chat.setStartTime(new Date().toInstant());
         chat.setCreatedAt(new Date().toInstant());
 
         // get sample user from database
