@@ -20,14 +20,16 @@ public class ChatScreen extends JPanel {
     // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
+
     // shared swing component among methods
     private final JTextArea chatArea = new JTextArea();
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
     private final JPanel rightPanel = new JPanel(new BorderLayout());
     private final JLabel userMessageLabel = new JLabel(" ");
-    private Chat activeChat;
     private final User loginUser;
+    private Chat activeChat;
+
     // chat list
     private JList<String> chatList;
 
@@ -39,9 +41,6 @@ public class ChatScreen extends JPanel {
             System.out.println("Login user is null");
             throw new IllegalArgumentException("Login user is null");
         }
-
-        System.out.println("Login user is " + loginUser);
-
         this.loginUser = loginUser;
     }
 
@@ -85,16 +84,26 @@ public class ChatScreen extends JPanel {
                 if (selectedIndex >= 0 && selectedIndex < chats.size()) {
                     Chat selectedChat = chats.get(selectedIndex);
                     int chatId = selectedChat.getId();
+
                     // get active chat from database
                     EntityManager em = HibernateUtil.getEmf().createEntityManager();
                     Chat chatEntity = em.find(Chat.class, chatId);
                     setActiveChat(chatEntity);
 
+                    // check if the user subscribe to the chat
+                    EntityManager em2 = HibernateUtil.getEmf().createEntityManager();
+                    Long count = em2.createQuery(
+                                    "SELECT count(uc) FROM UserChat uc WHERE uc.user.id = :userId and uc.chat.id = :chatId", Long.class)
+                            .setParameter("userId", loginUser.getId())
+                            .setParameter("chatId", chatId)
+                            .getSingleResult();
 
+                    // no any subscription found
+                    if (count == 0) {
+                        displaySubscribeButton();
+                        return;
+                    }
                     loadChatMessages(chatId);
-
-                    // show to message send area if only chat is selected
-//                    showMessageSendArea();
                 }
             }
         });
@@ -217,6 +226,17 @@ public class ChatScreen extends JPanel {
         }
 
         displayChatMessages();
+    }
+
+    private void displaySubscribeButton() {
+        chatArea.setText("You should subscribe to the chat");
+        chatArea.append("\n");
+
+        JButton subscribeButton = new JButton("Subscribe");
+        subscribeButton.addActionListener((e) -> {
+            // subscribe logic
+        });
+
     }
 
     private void displayChatMessages() {
