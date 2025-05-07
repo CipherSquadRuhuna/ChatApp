@@ -53,6 +53,52 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.4</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals><goal>shade</goal></goals>
+                        <configuration>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>client.Main</mainClass>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.akman</groupId>
+                <artifactId>jpackage-maven-plugin</artifactId>
+                <version>0.1.5</version>
+                <executions>
+                    <execution>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jpackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <input>${project.build.directory}</input>
+                    <dest>${project.build.directory}/installer</dest>
+                    <name>MyApp</name>
+                    <mainjar>${project.build.finalName}-shaded.jar</mainjar>
+                    <mainclass>client.Main</mainclass>
+                    <type>EXE</type>
+                    <winshortcut>true</winshortcut>
+                    <winmenu>true</winmenu>
+<!--                    <icon>${project.basedir}/src/main/resources/app.ico</icon>-->
+
+                        <javaoptions>-Xmx512m</javaoptions>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
+
 </project>

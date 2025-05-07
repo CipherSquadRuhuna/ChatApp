@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class ChatScreen extends JPanel {
+    protected final JPanel rightPanel = new JPanel(new BorderLayout());
     // chats data
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
@@ -85,31 +86,37 @@ public class ChatScreen extends JPanel {
                     Chat chatEntity = em.find(Chat.class, chatId);
                     setActiveChat(chatEntity);
 
-                    // check if the user subscribe to the chat
-                    EntityManager em2 = HibernateUtil.getEmf().createEntityManager();
-                    Long count = em2.createQuery(
-                                    "SELECT count(uc) FROM UserChat uc WHERE uc.user.id = :userId and uc.chat.id = :chatId", Long.class)
-                            .setParameter("userId", loginUser.getId())
-                            .setParameter("chatId", chatId)
-                            .getSingleResult();
 
-                    // no any subscription found
-                    if (count == 0) {
-                        displaySubscribeToChat();
-                        return;
-                    }
+                    handleChatDisplayArea();
 
-                    // check chat start
-                    if(activeChat.getStartTime() == null) {
-                        displayChatNotStartedMessage();
-                        return;
-                    }
-
-                    showChatDisplayArea();
-                    loadChatMessages(chatId);
                 }
             }
         });
+    }
+
+    public void handleChatDisplayArea() {
+        // check if the user subscribe to the chat
+        EntityManager em2 = HibernateUtil.getEmf().createEntityManager();
+        Long count = em2.createQuery(
+                        "SELECT count(uc) FROM UserChat uc WHERE uc.user.id = :userId and uc.chat.id = :chatId", Long.class)
+                .setParameter("userId", loginUser.getId())
+                .setParameter("chatId", activeChat.getId())
+                .getSingleResult();
+
+        // no any subscription found
+        if (count == 0) {
+            displaySubscribeToChat();
+            return;
+        }
+
+        // check chat start
+        if (activeChat.getStartTime() == null) {
+            displayChatNotStartedMessage();
+            return;
+        }
+
+        showChatDisplayArea();
+        loadChatMessages();
     }
 
     public Chat getActiveChat() {
@@ -188,7 +195,8 @@ public class ChatScreen extends JPanel {
         }
     }
 
-    private void showChatDisplayArea() {
+    protected void showChatDisplayArea() {
+
         rightPanel.removeAll();
         rightPanel.revalidate();
         rightPanel.repaint();
@@ -215,26 +223,20 @@ public class ChatScreen extends JPanel {
         rightPanel.add(inputPanel, BorderLayout.SOUTH);
     }
 
-    private void loadChatMessages(int chatId) {
+    protected void loadChatMessages() {
         EntityManager em = HibernateUtil.getEmf().createEntityManager();
         String query = "select m from ChatMessage m where m.chat.id=:chatId";
         TypedQuery<ChatMessage> q = em.createQuery(query, ChatMessage.class);
-        System.out.println("Loading Chat Messages for " + chatId);
-        q.setParameter("chatId", chatId);
+        System.out.println("Loading Chat Messages for " + activeChat.getId());
+        q.setParameter("chatId", activeChat.getId());
 
-        // clear old list
         messages.clear();
         messages.addAll(q.getResultList());
-
-//        print for testing
-        for (ChatMessage message : messages) {
-            System.out.println(message.getMessage());
-        }
 
         displayChatMessages();
     }
 
-    private void clearRightPanel() {
+    protected void clearRightPanel() {
         rightPanel.removeAll();
         rightPanel.revalidate();
         rightPanel.repaint();
@@ -295,13 +297,16 @@ public class ChatScreen extends JPanel {
                 et.persist(newChatSubscription);
                 transaction.commit();
 
-                if(activeChat.getStartTime() == null) {
+
+                if (activeChat.getStartTime() == null) {
+
                     displayChatNotStartedMessage();
                     return;
                 }
 
                 showChatDisplayArea();
-                loadChatMessages(activeChat.getId());
+                loadChatMessages();
+
             } catch (Exception ex) {
                 System.out.println("Unable to subscribe to chat");
                 System.out.println(ex.getMessage());
@@ -322,9 +327,4 @@ public class ChatScreen extends JPanel {
             chatArea.append(message.getUser().getNickName() + ":" + message.getMessage() + "\n");
         }
     }
-
-    private void showChatList() {
-        chatList = new JList<>(loadChatList());
-    }
-
 }
