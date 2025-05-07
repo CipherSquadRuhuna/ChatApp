@@ -22,7 +22,6 @@ public class ChatScreen extends JPanel {
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
-    private final JPanel rightPanel = new JPanel(new BorderLayout());
     private final JLabel userMessageLabel = new JLabel(" ");
     private final User loginUser;
     // shared swing component among methods
@@ -103,7 +102,7 @@ public class ChatScreen extends JPanel {
                 .setParameter("chatId", activeChat.getId())
                 .getSingleResult();
 
-        // no any subscription found
+        // no subscription found
         if (count == 0) {
             displaySubscribeToChat();
             return;
