@@ -1,7 +1,5 @@
 package client.gui.user.common;
 
-
-
 import models.ChatMessage;
 
 import javax.swing.*;
