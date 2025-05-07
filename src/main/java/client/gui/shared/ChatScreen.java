@@ -22,6 +22,7 @@ public class ChatScreen extends JPanel {
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
+    private final JPanel rightPanel = new JPanel(new BorderLayout());
     private final JLabel userMessageLabel = new JLabel(" ");
     private final User loginUser;
     // shared swing component among methods
@@ -85,7 +86,9 @@ public class ChatScreen extends JPanel {
                     Chat chatEntity = em.find(Chat.class, chatId);
                     setActiveChat(chatEntity);
 
+
                     handleChatDisplayArea();
+
                 }
             }
         });
@@ -193,6 +196,7 @@ public class ChatScreen extends JPanel {
     }
 
     protected void showChatDisplayArea() {
+
         rightPanel.removeAll();
         rightPanel.revalidate();
         rightPanel.repaint();
@@ -293,13 +297,16 @@ public class ChatScreen extends JPanel {
                 et.persist(newChatSubscription);
                 transaction.commit();
 
+
                 if (activeChat.getStartTime() == null) {
+
                     displayChatNotStartedMessage();
                     return;
                 }
 
                 showChatDisplayArea();
                 loadChatMessages();
+
             } catch (Exception ex) {
                 System.out.println("Unable to subscribe to chat");
                 System.out.println(ex.getMessage());
@@ -312,6 +319,7 @@ public class ChatScreen extends JPanel {
     private void displayChatMessages() {
         // clear chat areas
         chatArea.setText("");
+
         // show chat start time
         chatArea.append("Chat started at:" + activeChat.getStartTime() + "\n");
 
@@ -319,5 +327,4 @@ public class ChatScreen extends JPanel {
             chatArea.append(message.getUser().getNickName() + ":" + message.getMessage() + "\n");
         }
     }
-
 }
