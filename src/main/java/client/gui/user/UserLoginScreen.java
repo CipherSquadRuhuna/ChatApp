@@ -72,6 +72,13 @@ public class UserLoginScreen extends JPanel {
         });
 
         adminLogin.addActionListener((e)->{
+            // get sample user for testing purpose
+            EntityManager em = HibernateUtil.getEmf().createEntityManager();
+            models.User SampleUser = em.find(models.User.class, 1);
+
+            // set the login user status
+            userScreen.setUser(SampleUser);
+
             userScreen.showAdminChatScreen();
         });
 
