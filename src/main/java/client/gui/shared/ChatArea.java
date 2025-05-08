@@ -32,6 +32,7 @@ public class ChatArea extends JPanel {
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
     protected Chat chat;
     StyledDocument doc;
+    JPanel inputPanel;
 
     ChatUtility chatUtility;
 
@@ -65,6 +66,9 @@ public class ChatArea extends JPanel {
         chatArea.setText("");
     }
 
+    /**
+     * Check if the current login user is subscribed to the current active chat
+     */
     public Boolean isSubscribed() throws Exception {
         try (EntityManager em2 = HibernateUtil.getEmf().createEntityManager()) {
 
@@ -79,6 +83,16 @@ public class ChatArea extends JPanel {
         }
     }
 
+    /**
+     * Check if the current login user leave from the chat
+     */
+    public Boolean isUnsubscribed() {
+        return getUserChat().getUnsubscribedAt() != null;
+    }
+
+    /**
+     * Display chat messages or relevant section base on state
+     */
     public void handleChatDisplayArea() {
         // check if the user subscribe to the chat
         try {
@@ -93,12 +107,15 @@ public class ChatArea extends JPanel {
                 return;
             }
 
-            DisplayChats();
+            DisplayChatSection();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
+    /**
+     * load chat messages into messages List
+     */
     protected void loadChatMessages() {
         EntityManager em = HibernateUtil.getEmf().createEntityManager();
         String query = "select m from ChatMessage m where m.chat.id=:chatId";
@@ -111,7 +128,10 @@ public class ChatArea extends JPanel {
 
     }
 
-    protected void DisplayChats() {
+    /**
+     * Display chat section with relavent action for users
+     */
+    protected void DisplayChatSection() {
         clearPanel();
 
         // get messages
@@ -125,9 +145,16 @@ public class ChatArea extends JPanel {
         chatPanel.add(chatScrollPane, BorderLayout.CENTER);
 
         displayChatMessages();
-        showMessageSendArea();
+        if (isUnsubscribed()) {
+            displayLeaveFromChatMessage();
+            return;
+        }
+        displayMessageSendArea();
     }
 
+    /**
+     * Display chat not started message for users, when chat is not started by admin
+     */
     private void displayChatNotStartedMessage() {
         //clear right panel
         clearPanel();
@@ -142,6 +169,9 @@ public class ChatArea extends JPanel {
         chatPanel.add(chatInfoPanel, BorderLayout.CENTER);
     }
 
+    /**
+     * Make the user subscriber for given chat
+     */
     protected void subscribeToChat(User user, Chat chat) throws Exception {
         try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
 
@@ -170,6 +200,9 @@ public class ChatArea extends JPanel {
 
     }
 
+    /**
+     * Display subscribe button for users when user not subscribe for the chat
+     */
     private void displaySubscribeToChat() {
 
         clearPanel();
@@ -218,7 +251,7 @@ public class ChatArea extends JPanel {
                     return;
                 }
 
-                DisplayChats();
+                DisplayChatSection();
                 loadChatMessages();
 
 
@@ -231,10 +264,11 @@ public class ChatArea extends JPanel {
 
     }
 
-    private void showMessageSendArea() {
-
-
-        JPanel inputPanel = new JPanel(new BorderLayout());
+    /**
+     * display message send area
+     */
+    private void displayMessageSendArea() {
+        inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(messageField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
         inputPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -247,9 +281,32 @@ public class ChatArea extends JPanel {
         sendButton.addActionListener(this::sendMessage);
     }
 
+    /**
+     * Hide message send area from user
+     */
+    private void hideMessageSendArea() {
+        chatPanel.remove(inputPanel);
+        chatPanel.revalidate();
+        chatPanel.repaint();
+    }
+
+    /**
+     * Display that user left from chat
+     */
+    private void displayLeaveFromChatMessage() {
+        JPanel LeaveMessagePanel = new JPanel(new BorderLayout());
+        JLabel messageLabel = new JLabel("You Leave from chat");
+        LeaveMessagePanel.add(messageLabel, BorderLayout.CENTER);
+        LeaveMessagePanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        chatPanel.add(LeaveMessagePanel, BorderLayout.SOUTH);
+    }
+
+    /**
+     * Get all subscribers from given chat, that not left chat
+     */
     private List<UserChat> getSubscribers() throws Exception {
         try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
-            String query = "select s from UserChat s join fetch s.user u where s.chat.id=:chatId ";
+            String query = "select s from UserChat s join fetch s.user u where s.chat.id=:chatId and s.unsubscribedAt is null";
             TypedQuery<UserChat> q = em.createQuery(query, UserChat.class);
             q.setParameter("chatId", chat.getId());
             return q.getResultList();
@@ -259,6 +316,9 @@ public class ChatArea extends JPanel {
         }
     }
 
+    /**
+     * Display chat messages f
+     */
     private void displayChatMessages() {
 
         try {
@@ -290,7 +350,7 @@ public class ChatArea extends JPanel {
                     System.out.println("Unable to display subscriber message");
                     e.printStackTrace();
                 }
-                chatUtility.printMessage(message);
+                chatUtility.displayUserMessage(message);
 
             }
 
@@ -299,16 +359,112 @@ public class ChatArea extends JPanel {
                 chatUtility.displaySubscriberJoinMessage(subscriber);
             }
 
+            // show chat stop message is stopped
+            if(chat.getEndTime() != null) {
+                System.out.println("Chat ended");
+                chatUtility.displayInfoMessage("Chat Stopped At: " + chat.getEndTime());
+            }
+
+
         } catch (Exception e) {
             e.printStackTrace();
             System.out.println("Unable to display chat messages" + e.getMessage());
         }
     }
 
+    /**
+     * get current login user chat session
+     */
+    private UserChat getUserChat() {
+        try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+
+            UserChatId userChatId = new UserChatId();
+            userChatId.setUserId(user.getId());
+            userChatId.setChatId(chat.getId());
+
+            return em.find(UserChat.class, userChatId);
+
+        } catch (Exception ex) {
+            System.out.println("Unable to find the chat");
+            System.out.println(ex.getMessage());
+
+            throw ex;
+        }
+    }
+
+    /**
+     * End current chat
+     */
+    private void endChat(){
+        try(EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+            em.getTransaction().begin();
+            Chat chat = em.find(Chat.class,getChat().getId());
+            System.out.println(chat);
+            chat.setEndTime(Instant.now());
+            em.persist(chat);
+            em.getTransaction().commit();
+        }
+    }
+
+    /**
+     * make the current user left the chat
+     */
+    private void leaveUserFromChat() {
+        try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+
+            EntityTransaction transaction = em.getTransaction();
+            transaction.begin();
+
+            UserChatId userChatId = new UserChatId();
+            userChatId.setUserId(user.getId());
+            userChatId.setChatId(chat.getId());
+
+            UserChat userChat = em.find(UserChat.class, userChatId);
+
+            if (userChat == null) {
+                System.out.println("UserChat not found");
+                return;
+            }
+
+            userChat.setUnsubscribedAt(Instant.now());
+            em.persist(userChat);
+
+            transaction.commit();
+
+        } catch (Exception ex) {
+            System.out.println("Unable to subscribe to chat");
+            System.out.println(ex.getMessage());
+
+            throw ex;
+        }
+    }
+
+    /**
+     * Add new message to the chat by current user
+     */
     private void sendMessage(ActionEvent e) {
         String message = messageField.getText().trim();
         // return if message empty
         if (message.isEmpty()) return;
+
+        // if say bye
+        if (message.equals("/bye")) {
+            try {
+                messageField.setText("");
+                leaveUserFromChat();
+                hideMessageSendArea();
+                displayLeaveFromChatMessage();
+                System.out.println(getSubscribers());
+                if (getSubscribers().isEmpty()) {
+                    System.out.println("Subscriber list is empty");
+                    chatUtility.displayInfoMessage("Chat Stopped at " + Instant.now());
+                    endChat();
+                }
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+            return;
+        }
 
         // create message object
         ChatMessage messageObj = new ChatMessage();

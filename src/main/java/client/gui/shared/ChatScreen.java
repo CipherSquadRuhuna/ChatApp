@@ -2,18 +2,15 @@ package client.gui.shared;
 
 import common.HibernateUtil;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
-import models.*;
-import server.ServerInterface;
+import models.Chat;
+import models.User;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.rmi.Naming;
 import java.util.ArrayList;
-import java.util.Date;
+
 
 public class ChatScreen extends ChatArea {
     protected final JPanel rightPanel = new JPanel(new BorderLayout());
@@ -22,8 +19,6 @@ public class ChatScreen extends ChatArea {
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final JLabel userMessageLabel = new JLabel(" ");
 
-    // shared swing component among methods
-    private Chat activeChat;
 
     // chat list
     private JList<String> chatList = new JList<>();
@@ -66,15 +61,6 @@ public class ChatScreen extends ChatArea {
                 handleChatDisplayArea();
             }
         }
-    }
-
-
-    public Chat getActiveChat() {
-        return activeChat;
-    }
-
-    public void setActiveChat(Chat activeChat) {
-        this.activeChat = activeChat;
     }
 
     private DefaultListModel<String> loadChatList() {
