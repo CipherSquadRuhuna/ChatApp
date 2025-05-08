@@ -1,8 +1,10 @@
 package client.gui.user;
 
+import Utility.UserService;
 import client.gui.common.AppScreen;
 import common.HibernateUtil;
 import jakarta.persistence.EntityManager;
+import models.User;
 
 import javax.swing.*;
 import java.awt.*;
@@ -61,14 +63,40 @@ public class UserLoginScreen extends JPanel {
 
                 // get sample user for testing purpose
                 EntityManager em = HibernateUtil.getEmf().createEntityManager();
-                models.User SampleUser = em.find(models.User.class, 5);
+//                models.User SampleUser = em.find(models.User.class, 3);
 
-                // set the login user status
-                userScreen.setUser(SampleUser);
+                UserService userService = new UserService();
 
-                // show to chat screen
-                userScreen.showUserChatScreen();
+                String enteredUsername = username.getText();
+                String enteredPassword = new String(password.getPassword());
+
+                models.User loggedUser = userService.userlogin(enteredUsername, enteredPassword);
+
+
+                System.out.println(loggedUser.getId()+" "+loggedUser.getNickName());
+
+                if (loggedUser != null) {
+                    JOptionPane.showMessageDialog(null, "Login successful! Welcome " + loggedUser.getUsername());
+
+                    // Convert to client.User if needed (depending on your design)
+//                    User user = new User(loggedUser.getId(), loggedUser.getNickName());
+
+                    models.User logedUser = em.find(models.User.class, loggedUser.getId());
+
+
+                    // set the login user status
+                    userScreen.setUser(logedUser);
+                    // show to chat screen
+                    userScreen.showUserChatScreen();
+                } else {
+                    JOptionPane.showMessageDialog(null, "Invalid credentials. Please try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
+
+                // show chat screen
             }
+
+
+
         });
 
         adminLogin.addActionListener((e)->{
@@ -80,6 +108,9 @@ public class UserLoginScreen extends JPanel {
             userScreen.setUser(SampleUser);
 
             userScreen.showAdminChatScreen();
+
+
+
         });
 
         register.addActionListener((e)->{
