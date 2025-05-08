@@ -10,7 +10,8 @@ import models.*;
 import server.ServerInterface;
 
 import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.rmi.Naming;
@@ -41,7 +42,7 @@ public class ChatArea extends JPanel {
         chatUtility = new ChatUtility(chatArea);
 
         JLabel userMessageLabel = new JLabel(" ");
-        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel,chatUtility);
+        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel, chatUtility);
         Thread chatThread = new Thread(chat);
         chatThread.start();
     }
@@ -49,12 +50,13 @@ public class ChatArea extends JPanel {
     public Chat getChat() {
         return chat;
     }
+
     public void setChat(Chat chat) {
         this.chat = chat;
     }
 
     /**
-     * Clear chat are content
+     * Clear chat content
      */
     public void clearPanel() {
         chatPanel.removeAll();
@@ -140,6 +142,34 @@ public class ChatArea extends JPanel {
         chatPanel.add(chatInfoPanel, BorderLayout.CENTER);
     }
 
+    protected void subscribeToChat(User user, Chat chat) throws Exception {
+        try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
+
+            EntityTransaction transaction = et.getTransaction();
+            transaction.begin();
+
+            UserChatId userChatId = new UserChatId();
+            userChatId.setUserId(user.getId());
+            userChatId.setChatId(chat.getId());
+
+            UserChat newChatSubscription = new UserChat();
+            newChatSubscription.setId(userChatId);
+            newChatSubscription.setChat(chat);
+            newChatSubscription.setUser(user);
+            newChatSubscription.setSubscribedAt(Instant.now());
+
+            et.persist(newChatSubscription);
+            transaction.commit();
+
+        } catch (Exception ex) {
+            System.out.println("Unable to subscribe to chat");
+            System.out.println(ex.getMessage());
+
+            throw ex;
+        }
+
+    }
+
     private void displaySubscribeToChat() {
 
         clearPanel();
@@ -165,22 +195,23 @@ public class ChatArea extends JPanel {
 
             try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
 
-                EntityTransaction transaction = et.getTransaction();
-                transaction.begin();
+//                EntityTransaction transaction = et.getTransaction();
+//                transaction.begin();
+//
+//                UserChatId userChatId = new UserChatId();
+//                userChatId.setUserId(user.getId());
+//                userChatId.setChatId(chat.getId());
+//
+//                UserChat newChatSubscription = new UserChat();
+//                newChatSubscription.setId(userChatId);
+//                newChatSubscription.setChat(chat);
+//                newChatSubscription.setUser(user);
+//                newChatSubscription.setSubscribedAt(Instant.now());
+//
+//                et.persist(newChatSubscription);
+//                transaction.commit();
 
-                UserChatId userChatId = new UserChatId();
-                userChatId.setUserId(user.getId());
-                userChatId.setChatId(chat.getId());
-
-                UserChat newChatSubscription = new UserChat();
-                newChatSubscription.setId(userChatId);
-                newChatSubscription.setChat(chat);
-                newChatSubscription.setUser(user);
-                newChatSubscription.setSubscribedAt(Instant.now());
-
-                et.persist(newChatSubscription);
-                transaction.commit();
-
+                subscribeToChat(user, chat);
 
                 if (chat.getStartTime() == null) {
                     displayChatNotStartedMessage();
@@ -189,6 +220,7 @@ public class ChatArea extends JPanel {
 
                 DisplayChats();
                 loadChatMessages();
+
 
             } catch (Exception ex) {
                 System.out.println("Unable to subscribe to chat");
@@ -253,7 +285,7 @@ public class ChatArea extends JPanel {
 
                     tempSubscriberList.removeAll(toRemove);
 
-                }catch (Exception e) {
+                } catch (Exception e) {
                     System.out.println(e.getMessage());
                     System.out.println("Unable to display subscriber message");
                     e.printStackTrace();

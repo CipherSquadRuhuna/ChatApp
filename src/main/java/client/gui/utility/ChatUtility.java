@@ -90,7 +90,7 @@ public class ChatUtility extends JFrame {
      * display subscriber join message
      */
     public void displaySubscriberJoinMessage(UserChat subscriber) throws BadLocationException {
-        String userJoinTextLine = subscriber.getUser().getNickName() + "has joined " + subscriber.getSubscribedAt() + " \n";
+        String userJoinTextLine = subscriber.getUser().getNickName() + " has joined " + subscriber.getSubscribedAt() + " \n";
         doc.insertString(doc.getLength(), userJoinTextLine, infoMessageAttr);
     }
 
