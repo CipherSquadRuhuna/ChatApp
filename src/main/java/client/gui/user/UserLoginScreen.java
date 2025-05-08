@@ -61,7 +61,7 @@ public class UserLoginScreen extends JPanel {
 
                 // get sample user for testing purpose
                 EntityManager em = HibernateUtil.getEmf().createEntityManager();
-                models.User SampleUser = em.find(models.User.class, 1);
+                models.User SampleUser = em.find(models.User.class, 5);
 
                 // set the login user status
                 userScreen.setUser(SampleUser);
