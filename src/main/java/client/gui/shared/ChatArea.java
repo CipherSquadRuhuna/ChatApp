@@ -13,6 +13,7 @@ import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -61,28 +62,40 @@ public class ChatArea extends JPanel {
         chatArea.setText("");
     }
 
+    public Boolean isSubscribed() throws Exception {
+        try (EntityManager em2 = HibernateUtil.getEmf().createEntityManager()){
+
+            Long count = em2.createQuery(
+                            "SELECT count(uc) FROM UserChat uc WHERE uc.user.id = :userId and uc.chat.id = :chatId", Long.class)
+                    .setParameter("userId", user.getId())
+                    .setParameter("chatId", chat.getId())
+                    .getSingleResult();
+            return count > 0;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void handleChatDisplayArea() {
         // check if the user subscribe to the chat
-        EntityManager em2 = HibernateUtil.getEmf().createEntityManager();
-        Long count = em2.createQuery(
-                        "SELECT count(uc) FROM UserChat uc WHERE uc.user.id = :userId and uc.chat.id = :chatId", Long.class)
-                .setParameter("userId", user.getId())
-                .setParameter("chatId", chat.getId())
-                .getSingleResult();
 
-        // no any subscription found
-        if (count == 0) {
-            displaySubscribeToChat();
-            return;
+        try {
+            System.out.println(isSubscribed());
+            if(!isSubscribed()){
+                displaySubscribeToChat();
+                return;
+            }
+
+            // check chat start
+            if (chat.getStartTime() == null) {
+                displayChatNotStartedMessage();
+                return;
+            }
+
+            showChatDisplayArea();
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
-
-        // check chat start
-        if (chat.getStartTime() == null) {
-            displayChatNotStartedMessage();
-            return;
-        }
-
-        showChatDisplayArea();
 
     }
 
@@ -174,7 +187,6 @@ public class ChatArea extends JPanel {
 
 
                 if (chat.getStartTime() == null) {
-
                     displayChatNotStartedMessage();
                     return;
                 }
