@@ -5,11 +5,16 @@ import client.gui.common.AppScreen;
 import client.gui.shared.ChatScreen;
 import common.HibernateUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
 import models.Chat;
+import models.User;
+import models.UserChat;
 
 import javax.swing.*;
 import java.awt.*;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminChatScreen extends ChatScreen {
     public AdminChatScreen(AppScreen appScreen) {
@@ -26,8 +31,77 @@ public class AdminChatScreen extends ChatScreen {
             return;
         }
 
-        showChatDisplayArea();
+        DisplayChats();
         loadChatMessages();
+        displayUserAddArea();
+    }
+
+    /**
+     * Get all users
+     */
+    public List<User> getAllUsers() throws Exception {
+        try(EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+            String query = "select u from User u";
+            TypedQuery<User> q = em.createQuery(query, User.class);
+           return q.getResultList();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Get all subscribers for selected chat
+     */
+    public List<UserChat> getAllSubscribers() throws Exception {
+        try(EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+            String query = "select s from UserChat s where s.chat = :chat";
+            TypedQuery<UserChat> q = em.createQuery(query, UserChat.class);
+            q.setParameter("chat", getChat());
+            return q.getResultList();
+        }catch (Exception e) {
+            System.out.println(e.getMessage());
+            throw e;
+        }
+    }
+
+    /**
+     * Get user who are not subscribe to the current chat
+     */
+    public void getAllUnsubscribers(){
+        try {
+            System.out.println(getAllUsers());
+            System.out.println(getAllSubscribers());
+            ArrayList<User> unsubscribers = new ArrayList<>();
+
+            List<User> allUsers = getAllUsers();
+            List<UserChat> allSubscribers = getAllSubscribers();
+
+            for (User user : allUsers) {
+                if(!isSubscribed()){
+                    unsubscribers.add(user);
+                }
+            }
+
+            for (User u:unsubscribers){
+                System.out.println(u.getNickName());
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void displayUserAddArea(){
+        JPanel panel = new JPanel();
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        JLabel chatStartLabel = new JLabel("Add User to Chat");
+        chatStartLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        panel.add(chatStartLabel);
+
+        chatPanel.add(panel, BorderLayout.EAST);
+
+        getAllUnsubscribers();
     }
 
     public void displayStartChatScreen() {
@@ -55,7 +129,7 @@ public class AdminChatScreen extends ChatScreen {
                 etm.persist(chat);
                 etm.getTransaction().commit();
 
-                showChatDisplayArea();
+                DisplayChats();
                 loadChatMessages();
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
