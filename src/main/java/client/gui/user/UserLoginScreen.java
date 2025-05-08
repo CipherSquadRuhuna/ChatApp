@@ -73,7 +73,7 @@ public class UserLoginScreen extends JPanel {
                 models.User loggedUser = userService.userlogin(enteredUsername, enteredPassword);
 
 
-                System.out.println(loggedUser.getId()+" "+loggedUser.getNickName());
+                System.out.println(loggedUser.getId() + " " + loggedUser.getNickName());
 
                 if (loggedUser != null) {
                     JOptionPane.showMessageDialog(null, "Login successful! Welcome " + loggedUser.getUsername());
@@ -87,31 +87,33 @@ public class UserLoginScreen extends JPanel {
                     // set the login user status
                     userScreen.setUser(logedUser);
                     // show to chat screen
-                    userScreen.showUserChatScreen();
-                } else {
-                    JOptionPane.showMessageDialog(null, "Invalid credentials. Please try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-                }
 
-                // show chat screen
+                    System.out.println(logedUser.getIsAdmin()+logedUser.getNickName());
+
+                    if (Boolean.TRUE.equals(logedUser.getIsAdmin())) {
+                        userScreen.showAdminChatScreen();
+                    } else if (Boolean.FALSE.equals(logedUser.getIsAdmin())) {
+                        userScreen.showUserChatScreen();
+                    }
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Invalid credentials. Please try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                    // show chat screen
+
             }
-
-
-
         });
 
-        adminLogin.addActionListener((e)->{
-            // get sample user for testing purpose
-            EntityManager em = HibernateUtil.getEmf().createEntityManager();
-            models.User SampleUser = em.find(models.User.class, 1);
-
-            // set the login user status
-            userScreen.setUser(SampleUser);
-
-            userScreen.showAdminChatScreen();
-
-
-
-        });
+//        adminLogin.addActionListener((e)->{
+//            // get sample user for testing purpose
+//            EntityManager em = HibernateUtil.getEmf().createEntityManager();
+//            models.User SampleUser = em.find(models.User.class, 1);
+//
+//            // set the login user status
+//            userScreen.setUser(SampleUser);
+//
+//            userScreen.showAdminChatScreen();
+//        });
 
         register.addActionListener((e)->{
             userScreen.showUserRegisterScreen();
