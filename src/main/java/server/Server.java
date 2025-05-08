@@ -37,7 +37,6 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                 try {
                     Socket socket = serverSocket.accept();
 
-
                     UserClient user = new UserClient(2, "Asela");
                     user.setSocket(socket);
                     addOnlineUser(user);

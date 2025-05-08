@@ -16,6 +16,7 @@ import java.rmi.Naming;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class ChatArea extends JPanel {
     protected final User user;
@@ -103,7 +104,6 @@ public class ChatArea extends JPanel {
         clearPanel();
 
         // Chat Display Area
-//        chatArea = new JTextPane();
         doc = chatArea.getStyledDocument();
         doc.setCharacterAttributes(0, doc.getLength(), new SimpleAttributeSet(), false);
 //        doc.remove(0, doc.getLength());
@@ -205,17 +205,46 @@ public class ChatArea extends JPanel {
         sendButton.addActionListener(this::sendMessage);
     }
 
+    private List<UserChat> getSubscribers() throws Exception{
+        try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+            String query = "select s from UserChat s where s.chat.id=:chatId";
+            TypedQuery<UserChat> q = em.createQuery(query, UserChat.class);
+            q.setParameter("chatId", chat.getId());
+            return q.getResultList();
+        } catch (Exception e) {
+            System.out.println("Unable to get subscribers");
+            throw e;
+        }
+    }
+
     private void displayChatMessages() {
         // Add "Chat started at" line
         StyleContext sc = StyleContext.getDefaultStyleContext();
         AttributeSet boldAttr = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Bold, Boolean.TRUE);
+        SimpleAttributeSet centerAttr = new SimpleAttributeSet();
+        StyleConstants.setAlignment(centerAttr, StyleConstants.ALIGN_CENTER);
+        StyleConstants.setForeground(centerAttr, Color.BLUE);
+
 
         try {
             String startTimeText = "Chat started at: " + chat.getStartTime() + "\n";
             doc.insertString(doc.getLength(), startTimeText, boldAttr);
 
+            List<UserChat> subscriberList = getSubscribers();
+
             // Append each message
             for (ChatMessage message : messages) {
+
+                // check is subscriber join
+                for(UserChat subscriber : subscriberList) {
+                    if(subscriber.getSubscribedAt().isBefore(message.getSentAt())){
+                        String userJoinTextLine = subscriber.getUser().getNickName() + "has joined " + subscriber.getSubscribedAt() + " \n" ;
+                        doc.insertString(doc.getLength(), userJoinTextLine, centerAttr);
+                        // remove subscriber from list
+                        subscriberList.remove(subscriber);
+                    }
+                }
+
                 String userLine = message.getUser().getNickName() + ": ";
                 String messageLine = message.getMessage() + "\n";
                 ImageIcon imageIcon = new ImageIcon(message.getUser().getProfilePicturePath());
@@ -235,7 +264,7 @@ public class ChatArea extends JPanel {
                 // Normal style for message
                 doc.insertString(doc.getLength(), messageLine, SimpleAttributeSet.EMPTY);
             }
-        } catch (BadLocationException e) {
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
