@@ -22,7 +22,7 @@ public class AdminChatScreen extends ChatScreen {
 
     @Override
     public void handleChatDisplayArea() {
-        if (getActiveChat().getStartTime() == null) {
+        if (getChat().getStartTime() == null) {
             displayStartChatScreen();
             return;
         }
@@ -33,7 +33,7 @@ public class AdminChatScreen extends ChatScreen {
     }
 
     public void displayStartChatScreen() {
-        clearRightPanel();
+        clearPanel();
 
         JPanel subscribePanel = new JPanel();
         subscribePanel.setLayout(new BoxLayout(subscribePanel, BoxLayout.Y_AXIS));
