@@ -17,7 +17,6 @@ public class AdminChatScreen extends ChatScreen {
 
         AdminMenu menu = new AdminMenu(appScreen);
         add(menu.getMenuBar(), BorderLayout.NORTH);
-
     }
 
     @Override
@@ -29,7 +28,6 @@ public class AdminChatScreen extends ChatScreen {
 
         showChatDisplayArea();
         loadChatMessages();
-
     }
 
     public void displayStartChatScreen() {
@@ -52,7 +50,7 @@ public class AdminChatScreen extends ChatScreen {
         startButton.addActionListener(e -> {
             try (EntityManager etm = HibernateUtil.getEmf().createEntityManager()) {
                 etm.getTransaction().begin();
-                Chat chat = etm.find(Chat.class, getActiveChat().getId());
+                Chat chat = etm.find(Chat.class, getChat().getId());
                 chat.setStartTime(Instant.now());
                 etm.persist(chat);
                 etm.getTransaction().commit();
@@ -64,7 +62,7 @@ public class AdminChatScreen extends ChatScreen {
             }
         });
 
+        chatPanel.add(subscribePanel, BorderLayout.CENTER);
 
-        rightPanel.add(subscribePanel, BorderLayout.CENTER);
     }
 }
