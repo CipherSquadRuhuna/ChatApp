@@ -1,6 +1,7 @@
 package client.gui.shared;
 
 import client.gui.user.common.ChatHandler;
+import client.gui.utility.ChatUtility;
 import common.HibernateUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -9,11 +10,11 @@ import models.*;
 import server.ServerInterface;
 
 import javax.swing.*;
-import javax.swing.text.*;
+import javax.swing.text.SimpleAttributeSet;
+import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.rmi.Naming;
-import java.rmi.RemoteException;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
@@ -21,8 +22,6 @@ import java.util.List;
 
 public class ChatArea extends JPanel {
     protected final User user;
-    protected Chat chat;
-
     /**
      * UI Elements for chat area
      */
@@ -31,15 +30,19 @@ public class ChatArea extends JPanel {
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
-    private final JLabel userMessageLabel = new JLabel(" ");
-
-
+    protected Chat chat;
     StyledDocument doc;
+
+    ChatUtility chatUtility;
 
     public ChatArea(User user) {
         this.user = user;
 
-        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel);
+        // initialize chat utility
+        chatUtility = new ChatUtility(chatArea);
+
+        JLabel userMessageLabel = new JLabel(" ");
+        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel, chatUtility);
         Thread chatThread = new Thread(chat);
         chatThread.start();
     }
@@ -53,7 +56,7 @@ public class ChatArea extends JPanel {
     }
 
     /**
-     * Clear chat are content
+     * Clear chat content
      */
     public void clearPanel() {
         chatPanel.removeAll();
@@ -63,7 +66,7 @@ public class ChatArea extends JPanel {
     }
 
     public Boolean isSubscribed() throws Exception {
-        try (EntityManager em2 = HibernateUtil.getEmf().createEntityManager()){
+        try (EntityManager em2 = HibernateUtil.getEmf().createEntityManager()) {
 
             Long count = em2.createQuery(
                             "SELECT count(uc) FROM UserChat uc WHERE uc.user.id = :userId and uc.chat.id = :chatId", Long.class)
@@ -78,10 +81,8 @@ public class ChatArea extends JPanel {
 
     public void handleChatDisplayArea() {
         // check if the user subscribe to the chat
-
         try {
-            System.out.println(isSubscribed());
-            if(!isSubscribed()){
+            if (!isSubscribed()) {
                 displaySubscribeToChat();
                 return;
             }
@@ -92,11 +93,10 @@ public class ChatArea extends JPanel {
                 return;
             }
 
-            showChatDisplayArea();
+            DisplayChats();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-
     }
 
     protected void loadChatMessages() {
@@ -109,24 +109,22 @@ public class ChatArea extends JPanel {
         messages.clear();
         messages.addAll(q.getResultList());
 
-        displayChatMessages();
     }
 
-    protected void showChatDisplayArea() {
-
+    protected void DisplayChats() {
         clearPanel();
+
+        // get messages
+        loadChatMessages();
 
         // Chat Display Area
         doc = chatArea.getStyledDocument();
         doc.setCharacterAttributes(0, doc.getLength(), new SimpleAttributeSet(), false);
-//        doc.remove(0, doc.getLength());
         chatArea.setEditable(false);
-//        chatArea.setLineWrap(true);
         JScrollPane chatScrollPane = new JScrollPane(chatArea);
         chatPanel.add(chatScrollPane, BorderLayout.CENTER);
 
-
-        loadChatMessages();
+        displayChatMessages();
         showMessageSendArea();
     }
 
@@ -142,6 +140,34 @@ public class ChatArea extends JPanel {
         chatInfoPanel.add(messageLabel);
 
         chatPanel.add(chatInfoPanel, BorderLayout.CENTER);
+    }
+
+    protected void subscribeToChat(User user, Chat chat) throws Exception {
+        try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
+
+            EntityTransaction transaction = et.getTransaction();
+            transaction.begin();
+
+            UserChatId userChatId = new UserChatId();
+            userChatId.setUserId(user.getId());
+            userChatId.setChatId(chat.getId());
+
+            UserChat newChatSubscription = new UserChat();
+            newChatSubscription.setId(userChatId);
+            newChatSubscription.setChat(chat);
+            newChatSubscription.setUser(user);
+            newChatSubscription.setSubscribedAt(Instant.now());
+
+            et.persist(newChatSubscription);
+            transaction.commit();
+
+        } catch (Exception ex) {
+            System.out.println("Unable to subscribe to chat");
+            System.out.println(ex.getMessage());
+
+            throw ex;
+        }
+
     }
 
     private void displaySubscribeToChat() {
@@ -169,30 +195,32 @@ public class ChatArea extends JPanel {
 
             try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
 
-                EntityTransaction transaction = et.getTransaction();
-                transaction.begin();
+//                EntityTransaction transaction = et.getTransaction();
+//                transaction.begin();
+//
+//                UserChatId userChatId = new UserChatId();
+//                userChatId.setUserId(user.getId());
+//                userChatId.setChatId(chat.getId());
+//
+//                UserChat newChatSubscription = new UserChat();
+//                newChatSubscription.setId(userChatId);
+//                newChatSubscription.setChat(chat);
+//                newChatSubscription.setUser(user);
+//                newChatSubscription.setSubscribedAt(Instant.now());
+//
+//                et.persist(newChatSubscription);
+//                transaction.commit();
 
-                UserChatId userChatId = new UserChatId();
-                userChatId.setUserId(user.getId());
-                userChatId.setChatId(chat.getId());
-
-                UserChat newChatSubscription = new UserChat();
-                newChatSubscription.setId(userChatId);
-                newChatSubscription.setChat(chat);
-                newChatSubscription.setUser(user);
-                newChatSubscription.setSubscribedAt(Instant.now());
-
-                et.persist(newChatSubscription);
-                transaction.commit();
-
+                subscribeToChat(user, chat);
 
                 if (chat.getStartTime() == null) {
                     displayChatNotStartedMessage();
                     return;
                 }
 
-                showChatDisplayArea();
+                DisplayChats();
                 loadChatMessages();
+
 
             } catch (Exception ex) {
                 System.out.println("Unable to subscribe to chat");
@@ -204,6 +232,8 @@ public class ChatArea extends JPanel {
     }
 
     private void showMessageSendArea() {
+
+
         JPanel inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(messageField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
@@ -217,9 +247,9 @@ public class ChatArea extends JPanel {
         sendButton.addActionListener(this::sendMessage);
     }
 
-    private List<UserChat> getSubscribers() throws Exception{
+    private List<UserChat> getSubscribers() throws Exception {
         try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
-            String query = "select s from UserChat s where s.chat.id=:chatId";
+            String query = "select s from UserChat s join fetch s.user u where s.chat.id=:chatId ";
             TypedQuery<UserChat> q = em.createQuery(query, UserChat.class);
             q.setParameter("chatId", chat.getId());
             return q.getResultList();
@@ -230,54 +260,48 @@ public class ChatArea extends JPanel {
     }
 
     private void displayChatMessages() {
-        // Add "Chat started at" line
-        StyleContext sc = StyleContext.getDefaultStyleContext();
-        AttributeSet boldAttr = sc.addAttribute(SimpleAttributeSet.EMPTY, StyleConstants.Bold, Boolean.TRUE);
-        SimpleAttributeSet centerAttr = new SimpleAttributeSet();
-        StyleConstants.setAlignment(centerAttr, StyleConstants.ALIGN_CENTER);
-        StyleConstants.setForeground(centerAttr, Color.BLUE);
-
 
         try {
-            String startTimeText = "Chat started at: " + chat.getStartTime() + "\n";
-            doc.insertString(doc.getLength(), startTimeText, boldAttr);
+            chatUtility.displayChatStartedMessage(chat);
+            List<UserChat> tempSubscriberList = getSubscribers();
 
-            List<UserChat> subscriberList = getSubscribers();
+            // scenario where no one send messages but still have some subscribers
+            if (messages.isEmpty()) {
+                chatUtility.showSubscriberJoinMessage(getSubscribers());
+                return;
+            }
 
             // Append each message
             for (ChatMessage message : messages) {
-
                 // check is subscriber join
-                for(UserChat subscriber : subscriberList) {
-                    if(subscriber.getSubscribedAt().isBefore(message.getSentAt())){
-                        String userJoinTextLine = subscriber.getUser().getNickName() + "has joined " + subscriber.getSubscribedAt() + " \n" ;
-                        doc.insertString(doc.getLength(), userJoinTextLine, centerAttr);
-                        // remove subscriber from list
-                        subscriberList.remove(subscriber);
+                try {
+                    List<UserChat> toRemove = new ArrayList<>();
+                    for (UserChat subscriber : tempSubscriberList) {
+                        if (subscriber.getSubscribedAt().isBefore(message.getSentAt())) {
+                            chatUtility.displaySubscriberJoinMessage(subscriber);
+                            toRemove.add(subscriber);
+                        }
                     }
+
+                    tempSubscriberList.removeAll(toRemove);
+
+                } catch (Exception e) {
+                    System.out.println(e.getMessage());
+                    System.out.println("Unable to display subscriber message");
+                    e.printStackTrace();
                 }
+                chatUtility.printMessage(message);
 
-                String userLine = message.getUser().getNickName() + ": ";
-                String messageLine = message.getMessage() + "\n";
-                ImageIcon imageIcon = new ImageIcon(message.getUser().getProfilePicturePath());
-                Image image = imageIcon.getImage().getScaledInstance(20, -1, Image.SCALE_SMOOTH); // scale height to 20px
-                ImageIcon scaledIcon = new ImageIcon(image);
-
-                // Create a style for the image
-                Style imageStyle = chatArea.addStyle("ImageStyle", null);
-                StyleConstants.setIcon(imageStyle, scaledIcon);
-
-                doc.insertString(doc.getLength(), "  ", imageStyle); // two spaces as placeholder for image
-
-
-                // Apply bold to nickname
-                doc.insertString(doc.getLength(), userLine, boldAttr);
-
-                // Normal style for message
-                doc.insertString(doc.getLength(), messageLine, SimpleAttributeSet.EMPTY);
             }
+
+            // load user that join  after all messages
+            for (UserChat subscriber : tempSubscriberList) {
+                chatUtility.displaySubscriberJoinMessage(subscriber);
+            }
+
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
+            System.out.println("Unable to display chat messages" + e.getMessage());
         }
     }
 
@@ -322,8 +346,8 @@ public class ChatArea extends JPanel {
             messageField.setText("");
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
+            ex.getStackTrace();
         }
     }
-
 
 }
