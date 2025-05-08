@@ -30,6 +30,17 @@ public class UserChat implements Serializable {
     @Column(name = "subscribed_at", nullable = false)
     private Instant subscribedAt;
 
+    @Column(name = "leave_at")
+    private Instant unsubscribedAt;
+
+    public Instant getUnsubscribedAt() {
+        return unsubscribedAt;
+    }
+
+    public void setUnsubscribedAt(Instant unsubscribedAt) {
+        this.unsubscribedAt = unsubscribedAt;
+    }
+
     public UserChatId getId() {
         return id;
     }

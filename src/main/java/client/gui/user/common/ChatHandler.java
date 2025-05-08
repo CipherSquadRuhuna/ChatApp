@@ -27,7 +27,7 @@ public class ChatHandler implements Runnable {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 // we have message object now
                 ChatMessage message = (ChatMessage) in.readObject();
-                chatUtility.printMessage(message);
+                chatUtility.displayUserMessage(message);
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println(e.getMessage());

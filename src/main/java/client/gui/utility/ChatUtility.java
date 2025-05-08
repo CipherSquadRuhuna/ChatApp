@@ -30,7 +30,7 @@ public class ChatUtility extends JFrame {
     /**
      * display message in chat area
      */
-    public void printMessage(ChatMessage message) {
+    public void displayUserMessage(ChatMessage message) {
         String userLine = message.getUser().getNickName() + ": ";
         String messageLine = message.getMessage() + "\n";
         try {
@@ -54,6 +54,17 @@ public class ChatUtility extends JFrame {
         } catch (Exception e) {
             System.out.println(e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    /**
+     * Display custom info message
+     */
+    public void displayInfoMessage(String message) {
+        try {
+            doc.insertString(doc.getLength(), message, boldAttr);
+        } catch (BadLocationException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -33,7 +33,7 @@ public class AdminChatScreen extends ChatScreen {
             return;
         }
 
-        DisplayChats();
+        DisplayChatSection();
         loadChatMessages();
         displayUserAddArea();
     }
@@ -120,6 +120,13 @@ public class AdminChatScreen extends ChatScreen {
             return;
         }
 
+        if(chat.getEndTime() != null){
+            JLabel message = new JLabel("User can't be added to the stopped chat");
+            message.setAlignmentX(Component.CENTER_ALIGNMENT);
+            userPanel.add(message);
+            return;
+        }
+
         // Convert users to strings for JList
         DefaultListModel<String> listModel = new DefaultListModel<>();
         for (User user : users) {
@@ -167,7 +174,7 @@ public class AdminChatScreen extends ChatScreen {
             subscribeToChat(user,chat);
 
             clearPanel();
-            DisplayChats();
+            DisplayChatSection();
             clearUserPanel();
 
             // refresh user list
@@ -204,7 +211,7 @@ public class AdminChatScreen extends ChatScreen {
                 etm.persist(chat);
                 etm.getTransaction().commit();
 
-                DisplayChats();
+                DisplayChatSection();
                 loadChatMessages();
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
