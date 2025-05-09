@@ -121,4 +121,7 @@ public class User implements Serializable {
         this.updatedAt = Instant.now();
     }
 
+
+    public void setNickname(String newNickname) {
+    }
 }

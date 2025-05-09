@@ -31,5 +31,20 @@ public class UserService {
     public void close() {
         emf.close();
     }
+
+    public void updateUser(User user) {
+        EntityManager em = emf.createEntityManager();
+        try {
+            em.getTransaction().begin();
+            em.merge(user);  // This updates the existing user
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            em.getTransaction().rollback();
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+    }
+
 }
 

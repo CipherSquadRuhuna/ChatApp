@@ -3,7 +3,9 @@ package client;
 import java.io.Serializable;
 import java.net.Socket;
 
-public class User implements Serializable {
+
+public class User extends models.User implements Serializable {
+
     private int id;
     private String name;
     private String username;
@@ -38,7 +40,7 @@ public class User implements Serializable {
         this.socket = socket;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
@@ -76,4 +78,12 @@ public class User implements Serializable {
         this.id = id;
         this.nickname = nickname;
     }
+
+    public void setPassword(String newPassword) {
+    }
+
+    public String getPassword() {
+        return null;
+    }
 }
+
