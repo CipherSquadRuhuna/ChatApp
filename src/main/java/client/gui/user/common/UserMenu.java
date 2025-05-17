@@ -1,7 +1,5 @@
 package client.gui.user.common;
 
-
-import client.User;
 import client.gui.common.AppScreen;
 import client.gui.shared.Menu;
 
@@ -34,8 +32,7 @@ public class UserMenu extends Menu {
 
         // add action lister for exit
         chatItem.addActionListener((e) -> {
-            User user = new User(1,"Asela 2");
-            screen.showUserChatScreen(user);
+            screen.showUserChatScreen();
         });
     }
 

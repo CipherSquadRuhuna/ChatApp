@@ -5,11 +5,12 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
 @Table(name = "user_chats")
-public class UserChat {
+public class UserChat implements Serializable {
     @EmbeddedId
     private UserChatId id;
 
@@ -28,6 +29,17 @@ public class UserChat {
     @ColumnDefault("current_timestamp()")
     @Column(name = "subscribed_at", nullable = false)
     private Instant subscribedAt;
+
+    @Column(name = "leave_at")
+    private Instant unsubscribedAt;
+
+    public Instant getUnsubscribedAt() {
+        return unsubscribedAt;
+    }
+
+    public void setUnsubscribedAt(Instant unsubscribedAt) {
+        this.unsubscribedAt = unsubscribedAt;
+    }
 
     public UserChatId getId() {
         return id;

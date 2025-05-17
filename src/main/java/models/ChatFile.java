@@ -5,11 +5,12 @@ import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.io.Serializable;
 import java.time.Instant;
 
 @Entity
 @Table(name = "chat_files")
-public class ChatFile {
+public class ChatFile implements Serializable {
     @Id
     @Column(name = "file_id", nullable = false)
     private Integer id;
