@@ -1,16 +1,12 @@
 package client.gui.user;
 
-import Utility.UserService;
+import client.gui.utility.UserService;
 import client.gui.common.AppScreen;
 import models.User;
 
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.util.Date;
 
 import static javax.swing.WindowConstants.EXIT_ON_CLOSE;
 
@@ -142,6 +138,7 @@ public class UserRegisterScreen extends JPanel {
         user.setPassword(password); // Consider hashing in production!
         user.setNickName(nickname);
         user.setProfilePicturePath(profilePicPath);
+        user.setIsAdmin(false);
 
 
         UserService userService =new UserService();
