@@ -2,21 +2,21 @@ package client.gui.admin;
 
 import client.gui.admin.common.AdminMenu;
 import client.gui.common.AppScreen;
+import common.HibernateUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
+import jakarta.persistence.TypedQuery;
+import models.User;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.sql.*;
+import java.util.List;
 
 public class AdminUserList extends JPanel {
     private JTable userTable;
     private DefaultTableModel tableModel;
-
-    // Database connection details
-    private static final String DB_URL = "jdbc:mysql://localhost:3306/chat_application";
-    private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "";
 
     public AdminUserList(AppScreen appScreen) {
         setLayout(new BorderLayout());
@@ -51,15 +51,15 @@ public class AdminUserList extends JPanel {
         add(buttonPanel, BorderLayout.SOUTH);
     }
 
-    private void addUserRow(String id, String email, String username, String nickName) {
-        tableModel.addRow(new Object[]{id, email, username, nickName});
+    private void addUserRow(Integer id, String email, String username, String nickName) {
+        tableModel.addRow(new Object[]{id.toString(), email, username, nickName});
     }
 
     private void removeSelectedUser() {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow >= 0) {
-            // Get user ID of the selected row
-            String userId = (String) userTable.getValueAt(selectedRow, 0);
+            String userIdStr = (String) userTable.getValueAt(selectedRow, 0);
+            Integer userId = Integer.valueOf(userIdStr);
 
             int confirm = JOptionPane.showConfirmDialog(
                     this,
@@ -68,10 +68,8 @@ public class AdminUserList extends JPanel {
                     JOptionPane.YES_NO_OPTION
             );
             if (confirm == JOptionPane.YES_OPTION) {
-                // Delete user from the database
                 boolean isDeleted = deleteUserFromDatabase(userId);
                 if (isDeleted) {
-                    // Remove row from table if deletion is successful
                     tableModel.removeRow(selectedRow);
                     JOptionPane.showMessageDialog(this, "User deleted successfully.");
                 } else {
@@ -86,13 +84,12 @@ public class AdminUserList extends JPanel {
     private void editSelectedUser() {
         int selectedRow = userTable.getSelectedRow();
         if (selectedRow >= 0) {
-            // Get user ID and current details of the selected row
-            String userId = (String) userTable.getValueAt(selectedRow, 0);
+            String userIdStr = (String) userTable.getValueAt(selectedRow, 0);
+            Integer userId = Integer.valueOf(userIdStr);
             String currentEmail = (String) userTable.getValueAt(selectedRow, 1);
             String currentUsername = (String) userTable.getValueAt(selectedRow, 2);
             String currentNickName = (String) userTable.getValueAt(selectedRow, 3);
 
-            // Show the Edit dialog
             JTextField emailField = new JTextField(currentEmail);
             JTextField usernameField = new JTextField(currentUsername);
             JTextField nickNameField = new JTextField(currentNickName);
@@ -107,15 +104,12 @@ public class AdminUserList extends JPanel {
 
             int option = JOptionPane.showConfirmDialog(this, panel, "Edit User", JOptionPane.OK_CANCEL_OPTION);
             if (option == JOptionPane.OK_OPTION) {
-                // Retrieve the new values
                 String newEmail = emailField.getText();
                 String newUsername = usernameField.getText();
                 String newNickName = nickNameField.getText();
 
-                // Update user in the database
                 boolean isUpdated = updateUserInDatabase(userId, newEmail, newUsername, newNickName);
                 if (isUpdated) {
-                    // Update the table row if the update is successful
                     userTable.setValueAt(newEmail, selectedRow, 1);
                     userTable.setValueAt(newUsername, selectedRow, 2);
                     userTable.setValueAt(newNickName, selectedRow, 3);
@@ -129,62 +123,65 @@ public class AdminUserList extends JPanel {
         }
     }
 
-    // Method to delete user from the database
-    private boolean deleteUserFromDatabase(String userId) {
-        String deleteQuery = "DELETE FROM `users` WHERE `user_id` = ?";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement pstmt = conn.prepareStatement(deleteQuery)) {
-
-            pstmt.setString(1, userId); // Set the user_id parameter for the query
-            int rowsAffected = pstmt.executeUpdate();
-
-            // Return true if the user was deleted successfully
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false; // Return false if there was an error
-        }
-    }
-
-    // Method to update user in the database
-    private boolean updateUserInDatabase(String userId, String newEmail, String newUsername, String newNickName) {
-        String updateQuery = "UPDATE `users` SET `email` = ?, `username` = ?, `nick_name` = ? WHERE `user_id` = ?";
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement pstmt = conn.prepareStatement(updateQuery)) {
-
-            pstmt.setString(1, newEmail);
-            pstmt.setString(2, newUsername);
-            pstmt.setString(3, newNickName);
-            pstmt.setString(4, userId); // Set the user_id parameter for the query
-            int rowsAffected = pstmt.executeUpdate();
-
-            // Return true if the user was updated successfully
-            return rowsAffected > 0;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false; // Return false if there was an error
-        }
-    }
-
-    // Method to retrieve user data from the database
-    private void retrieveUserData() {
-        String query = "SELECT `user_id`, `email`, `username`, `nick_name` FROM `users`"; // Corrected SQL query
-        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-
-            // Loop through the result set and add each row to the table model
-            while (rs.next()) {
-                String userId = rs.getString("user_id");
-                String email = rs.getString("email");
-                String username = rs.getString("username");
-                String nickName = rs.getString("nick_name");
-
-                addUserRow(userId, email, username, nickName);
+    private boolean deleteUserFromDatabase(Integer userId) {
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                em.remove(user);
+                tx.commit();
+                return true;
+            } else {
+                return false;
             }
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
 
-        } catch (SQLException e) {
+    private boolean updateUserInDatabase(Integer userId, String newEmail, String newUsername, String newNickName) {
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        EntityTransaction tx = em.getTransaction();
+        try {
+            tx.begin();
+            User user = em.find(User.class, userId);
+            if (user != null) {
+                user.setEmail(newEmail);
+                user.setUsername(newUsername);
+                user.setNickName(newNickName);
+                em.merge(user);
+                tx.commit();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            if (tx.isActive()) tx.rollback();
+            e.printStackTrace();
+            return false;
+        } finally {
+            em.close();
+        }
+    }
+
+    private void retrieveUserData() {
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        try {
+            TypedQuery<User> query = em.createQuery("SELECT u FROM User u", User.class);
+            List<User> users = query.getResultList();
+            for (User user : users) {
+                addUserRow(user.getId(), user.getEmail(), user.getUsername(), user.getNickName());
+            }
+        } catch (Exception e) {
             JOptionPane.showMessageDialog(this, "Error retrieving data: " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } finally {
+            em.close();
         }
     }
 }
