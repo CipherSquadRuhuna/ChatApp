@@ -95,7 +95,8 @@ public class AdminCreateNewChat extends JPanel {
             entityManager.persist(chat);
             transaction.commit();
             System.out.println("Chat created");
-            appScreen.showAdminChatScreen();
+
+            appScreen.showAdminChatScreen(chat);
         } catch (Exception ex) {
             if (transaction != null && transaction.isActive()) {
                 transaction.rollback();

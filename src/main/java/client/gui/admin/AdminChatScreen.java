@@ -17,13 +17,19 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdminChatScreen extends ChatScreen {
-    JPanel userPanel ;
+    JPanel userPanel;
 
     public AdminChatScreen(AppScreen appScreen) {
         super(appScreen.getUser());
 
         AdminMenu menu = new AdminMenu(appScreen);
         add(menu.getMenuBar(), BorderLayout.NORTH);
+    }
+
+    public AdminChatScreen(AppScreen appScreen, Chat chat) {
+        this(appScreen);
+        // set selected chat
+        setChat(chat);
     }
 
     @Override
@@ -38,15 +44,34 @@ public class AdminChatScreen extends ChatScreen {
         displayUserAddArea();
     }
 
+    @Override
+    protected void DisplayChatSection() {
+        clearPanel();
+        // get messages
+        loadChatMessages();
+
+        // make the scroll more smooth
+        addChatAreaToPanel();
+
+        // display chat messages
+        displayChatMessages();
+
+        // if chat stop hide the message send box
+        if (chat.getEndTime() == null) {
+            displayMessageSendArea();
+        }
+
+    }
+
     /**
      * Get all users
      */
     public List<User> getAllUsers() throws Exception {
-        try(EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+        try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
             String query = "select u from User u";
             TypedQuery<User> q = em.createQuery(query, User.class);
-           return q.getResultList();
-        }catch (Exception e) {
+            return q.getResultList();
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             throw e;
         }
@@ -56,12 +81,12 @@ public class AdminChatScreen extends ChatScreen {
      * Get all subscribers for selected chat
      */
     public List<UserChat> getAllSubscribers() throws Exception {
-        try(EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+        try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
             String query = "select s from UserChat s where s.chat = :chat";
             TypedQuery<UserChat> q = em.createQuery(query, UserChat.class);
             q.setParameter("chat", getChat());
             return q.getResultList();
-        }catch (Exception e) {
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             throw e;
         }
@@ -70,7 +95,7 @@ public class AdminChatScreen extends ChatScreen {
     /**
      * Get user who are not subscribe to the current chat
      */
-    public ArrayList<User> getAllUnsubscribers(){
+    public ArrayList<User> getAllUnsubscribers() {
         try {
 
             ArrayList<User> unsubscribers = new ArrayList<>();
@@ -81,7 +106,7 @@ public class AdminChatScreen extends ChatScreen {
             getAllSubscribers().forEach(sub -> subscriberIds.add(sub.getUser().getId()));
 
             for (User user : allUsers) {
-                if(!subscriberIds.contains(user.getId())) {
+                if (!subscriberIds.contains(user.getId())) {
                     unsubscribers.add(user);
                 }
             }
@@ -93,14 +118,14 @@ public class AdminChatScreen extends ChatScreen {
         }
     }
 
-    private void clearUserPanel(){
+    private void clearUserPanel() {
         // clear userpanel if any
         chatPanel.remove(userPanel);
         chatPanel.revalidate();
         chatPanel.repaint();
     }
 
-    public void displayUserAddArea(){
+    public void displayUserAddArea() {
         userPanel = new JPanel();
         userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.Y_AXIS));
         userPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -113,14 +138,14 @@ public class AdminChatScreen extends ChatScreen {
 
         ArrayList<User> users = getAllUnsubscribers();
 
-        if(users.isEmpty()){
+        if (users.isEmpty()) {
             JLabel message = new JLabel("All users are in the chat");
             message.setAlignmentX(Component.CENTER_ALIGNMENT);
             userPanel.add(message);
             return;
         }
 
-        if(chat.getEndTime() != null){
+        if (chat.getEndTime() != null) {
             JLabel message = new JLabel("User can't be added to the stopped chat");
             message.setAlignmentX(Component.CENTER_ALIGNMENT);
             userPanel.add(message);
@@ -171,7 +196,7 @@ public class AdminChatScreen extends ChatScreen {
         // Your logic here, e.g., add user to active chat session
         try {
             System.out.println("Adding user to chat: " + user.getNickName());
-            subscribeToChat(user,chat);
+            subscribeToChat(user, chat);
 
             clearPanel();
             DisplayChatSection();
@@ -210,6 +235,9 @@ public class AdminChatScreen extends ChatScreen {
                 chat.setStartTime(Instant.now());
                 etm.persist(chat);
                 etm.getTransaction().commit();
+
+                // set current active chat as started chat
+                setChat(chat);
 
                 DisplayChatSection();
                 loadChatMessages();

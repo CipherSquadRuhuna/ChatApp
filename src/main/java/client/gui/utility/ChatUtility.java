@@ -136,11 +136,21 @@ public class ChatUtility extends JFrame {
     }
 
     /**
+     * Format time date to readable
+     */
+
+    private String formatDateTimetoReadable(Instant instant) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        String formatedDateTime = instant.atZone(zoneId).format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
+        return formatedDateTime;
+    }
+
+    /**
      * display chat started time in given chat in blue color
      */
     public void displayChatStartedMessage(Chat chat) {
         try {
-            String startTimeText = "Chat started at: " + chat.getStartTime() + "\n";
+            String startTimeText = "Chat started at: " + formatDateTimetoReadable(chat.getStartTime()) + "\n";
             JLabel startTimeLabel = new JLabel(startTimeText);
             chatArea.add(startTimeLabel);
         } catch (Exception e) {
@@ -153,7 +163,6 @@ public class ChatUtility extends JFrame {
      */
     public void displaySubscriberJoinMessage(UserChat subscriber) throws BadLocationException {
         String userJoinTextLine = subscriber.getUser().getNickName() + " has joined " + subscriber.getSubscribedAt() + " \n";
-//        doc.insertString(doc.getLength(), userJoinTextLine, infoMessageAttr);
         JLabel label = new JLabel(userJoinTextLine);
         chatArea.add(label);
     }

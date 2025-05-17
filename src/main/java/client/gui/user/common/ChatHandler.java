@@ -12,9 +12,10 @@ public class ChatHandler implements Runnable {
     JPanel chatArea;
     JLabel userMessageLabel;
 
+
     ChatUtility chatUtility;
 
-    public ChatHandler(JPanel chatArea, JLabel userMessageLabel, ChatUtility chatUtility) {
+    public ChatHandler(JPanel chatArea, JLabel userMessageLabel) {
         this.chatArea = chatArea;
         this.userMessageLabel = userMessageLabel;
         this.chatUtility = chatUtility;
@@ -27,7 +28,11 @@ public class ChatHandler implements Runnable {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 // we have message object now
                 ChatMessage message = (ChatMessage) in.readObject();
+
+                // show the chat message only currently that chat is active
+
                 chatUtility.displayUserMessage(message);
+
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println(e.getMessage());

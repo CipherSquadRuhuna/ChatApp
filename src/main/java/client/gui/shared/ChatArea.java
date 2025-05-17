@@ -46,7 +46,7 @@ public class ChatArea extends JPanel {
         chatUtility = new ChatUtility(chatArea);
 
         JLabel userMessageLabel = new JLabel(" ");
-        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel, chatUtility);
+        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel);
         Thread chatThread = new Thread(chat);
         chatThread.start();
     }
@@ -109,6 +109,7 @@ public class ChatArea extends JPanel {
                 return;
             }
 
+
             DisplayChatSection();
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -139,18 +140,29 @@ public class ChatArea extends JPanel {
         // get messages
         loadChatMessages();
 
-
         // make the scroll more smooth
-        JScrollPane chatScrollPane = new JScrollPane(chatArea);
-        chatScrollPane.getVerticalScrollBar().setUnitIncrement(16);
-        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
+        addChatAreaToPanel();
 
         displayChatMessages();
+
+        //display leave from chat, if user leave from chat
         if (isUnsubscribed()) {
             displayLeaveFromChatMessage();
             return;
         }
-        displayMessageSendArea();
+        // show the message send area only if not the chat stop
+        if (chat.getEndTime() == null) {
+            displayMessageSendArea();
+        }
+    }
+
+    /**
+     * Add chat area to the main panel
+     */
+    protected void addChatAreaToPanel() {
+        JScrollPane chatScrollPane = new JScrollPane(chatArea);
+        chatScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
     }
 
     /**
@@ -252,7 +264,7 @@ public class ChatArea extends JPanel {
     /**
      * display message send area
      */
-    private void displayMessageSendArea() {
+    protected void displayMessageSendArea() {
         inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(messageField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
@@ -304,7 +316,7 @@ public class ChatArea extends JPanel {
     /**
      * Display chat messages f
      */
-    private void displayChatMessages() {
+    protected void displayChatMessages() {
 
         try {
             chatArea.removeAll();
@@ -321,10 +333,9 @@ public class ChatArea extends JPanel {
             }
 
 
-
             // Append each message
             for (ChatMessage message : messages) {
-                System.out.println(message.getMessage());
+
                 // check is subscriber join meanwhile
                 try {
                     List<UserChat> toRemove = new ArrayList<>();
@@ -356,6 +367,7 @@ public class ChatArea extends JPanel {
             if (chat.getEndTime() != null) {
                 System.out.println("Chat ended");
                 chatUtility.displayInfoMessage("Chat Stopped At: " + chat.getEndTime());
+//                hideMessageSendArea();
             }
 
 
