@@ -9,12 +9,12 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 
 public class ChatHandler implements Runnable {
-    JTextPane chatArea;
+    JPanel chatArea;
     JLabel userMessageLabel;
 
     ChatUtility chatUtility;
 
-    public ChatHandler(JTextPane chatArea, JLabel userMessageLabel, ChatUtility chatUtility) {
+    public ChatHandler(JPanel chatArea, JLabel userMessageLabel, ChatUtility chatUtility) {
         this.chatArea = chatArea;
         this.userMessageLabel = userMessageLabel;
         this.chatUtility = chatUtility;

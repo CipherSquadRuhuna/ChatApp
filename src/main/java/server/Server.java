@@ -77,7 +77,8 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                 ObjectOutputStream out = new ObjectOutputStream(socket.getOutputStream());
                 out.writeObject(message);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+//                throw new RuntimeException(e);
+                System.out.println("Other Exception: " + e.getMessage());
             }
         }
     }

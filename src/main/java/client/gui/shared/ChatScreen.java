@@ -19,7 +19,6 @@ public class ChatScreen extends ChatArea {
     private final ArrayList<Chat> chats = new ArrayList<>();
     private final JLabel userMessageLabel = new JLabel(" ");
 
-
     // chat list
     private JList<String> chatList = new JList<>();
 

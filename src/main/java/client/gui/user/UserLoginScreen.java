@@ -105,12 +105,12 @@ public class UserLoginScreen extends JPanel {
 
                 if (loggedUser != null) {
                     System.out.println(loggedUser.getId() + " " + loggedUser.getNickName());
-                    JOptionPane.showMessageDialog(
-                            null,
-                            "Login successful! Welcome " + loggedUser.getUsername(),
-                            "Success", // Title of the dialog
-                            JOptionPane.INFORMATION_MESSAGE // Message type for icon
-                    );
+//                    JOptionPane.showMessageDialog(
+//                            null,
+//                            "Login successful! Welcome " + loggedUser.getUsername(),
+//                            "Success", // Title of the dialog
+//                            JOptionPane.INFORMATION_MESSAGE // Message type for icon
+//                    );
 
 
                     EntityManager em = HibernateUtil.getEmf().createEntityManager();

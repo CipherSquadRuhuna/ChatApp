@@ -10,7 +10,6 @@ import models.*;
 import server.ServerInterface;
 
 import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -26,7 +25,7 @@ public class ChatArea extends JPanel {
      * UI Elements for chat area
      */
     protected final JPanel chatPanel = new JPanel(new BorderLayout());
-    private final JTextPane chatArea = new JTextPane();
+    private final JPanel chatArea = new JPanel();
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
@@ -38,6 +37,10 @@ public class ChatArea extends JPanel {
 
     public ChatArea(User user) {
         this.user = user;
+
+        // set chat area properties
+        chatArea.setLayout(new BoxLayout(chatArea, BoxLayout.Y_AXIS));
+        chatArea.setBackground(Color.WHITE);
 
         // initialize chat utility
         chatUtility = new ChatUtility(chatArea);
@@ -63,7 +66,6 @@ public class ChatArea extends JPanel {
         chatPanel.removeAll();
         chatPanel.revalidate();
         chatPanel.repaint();
-        chatArea.setText("");
     }
 
     /**
@@ -137,11 +139,10 @@ public class ChatArea extends JPanel {
         // get messages
         loadChatMessages();
 
-        // Chat Display Area
-        doc = chatArea.getStyledDocument();
-        doc.setCharacterAttributes(0, doc.getLength(), new SimpleAttributeSet(), false);
-        chatArea.setEditable(false);
+
+        // make the scroll more smooth
         JScrollPane chatScrollPane = new JScrollPane(chatArea);
+        chatScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         chatPanel.add(chatScrollPane, BorderLayout.CENTER);
 
         displayChatMessages();
@@ -228,22 +229,6 @@ public class ChatArea extends JPanel {
 
             try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
 
-//                EntityTransaction transaction = et.getTransaction();
-//                transaction.begin();
-//
-//                UserChatId userChatId = new UserChatId();
-//                userChatId.setUserId(user.getId());
-//                userChatId.setChatId(chat.getId());
-//
-//                UserChat newChatSubscription = new UserChat();
-//                newChatSubscription.setId(userChatId);
-//                newChatSubscription.setChat(chat);
-//                newChatSubscription.setUser(user);
-//                newChatSubscription.setSubscribedAt(Instant.now());
-//
-//                et.persist(newChatSubscription);
-//                transaction.commit();
-
                 subscribeToChat(user, chat);
 
                 if (chat.getStartTime() == null) {
@@ -322,6 +307,10 @@ public class ChatArea extends JPanel {
     private void displayChatMessages() {
 
         try {
+            chatArea.removeAll();
+            chatArea.revalidate();
+            chatArea.repaint();
+
             chatUtility.displayChatStartedMessage(chat);
             List<UserChat> tempSubscriberList = getSubscribers();
 
@@ -331,9 +320,12 @@ public class ChatArea extends JPanel {
                 return;
             }
 
+
+
             // Append each message
             for (ChatMessage message : messages) {
-                // check is subscriber join
+                System.out.println(message.getMessage());
+                // check is subscriber join meanwhile
                 try {
                     List<UserChat> toRemove = new ArrayList<>();
                     for (UserChat subscriber : tempSubscriberList) {
@@ -350,6 +342,7 @@ public class ChatArea extends JPanel {
                     System.out.println("Unable to display subscriber message");
                     e.printStackTrace();
                 }
+                //display the message
                 chatUtility.displayUserMessage(message);
 
             }
@@ -360,7 +353,7 @@ public class ChatArea extends JPanel {
             }
 
             // show chat stop message is stopped
-            if(chat.getEndTime() != null) {
+            if (chat.getEndTime() != null) {
                 System.out.println("Chat ended");
                 chatUtility.displayInfoMessage("Chat Stopped At: " + chat.getEndTime());
             }
@@ -395,10 +388,10 @@ public class ChatArea extends JPanel {
     /**
      * End current chat
      */
-    private void endChat(){
-        try(EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+    private void endChat() {
+        try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
             em.getTransaction().begin();
-            Chat chat = em.find(Chat.class,getChat().getId());
+            Chat chat = em.find(Chat.class, getChat().getId());
             System.out.println(chat);
             chat.setEndTime(Instant.now());
             em.persist(chat);
