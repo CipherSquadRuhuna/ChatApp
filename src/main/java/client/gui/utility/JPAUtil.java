@@ -1,4 +1,4 @@
-package Utility;
+package client.gui.utility;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
