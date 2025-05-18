@@ -92,9 +92,9 @@
                     <type>EXE</type>
                     <winshortcut>true</winshortcut>
                     <winmenu>true</winmenu>
-<!--                    <icon>${project.basedir}/src/main/resources/app.ico</icon>-->
+                    <!--                    <icon>${project.basedir}/src/main/resources/app.ico</icon>-->
 
-                        <javaoptions>-Xmx512m</javaoptions>
+                    <javaoptions>-Xmx512m</javaoptions>
                 </configuration>
             </plugin>
             <plugin>
