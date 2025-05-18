@@ -9,9 +9,12 @@ import jakarta.persistence.TypedQuery;
 import models.Chat;
 import models.User;
 import models.UserChat;
+import server.ServerInterface;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.rmi.Naming;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,24 +37,27 @@ public class AdminChatScreen extends ChatScreen {
 
     @Override
     public void handleChatDisplayArea() {
+        // set the chat property in chat utility
+
         if (getChat().getStartTime() == null) {
             displayStartChatScreen();
             return;
         }
 
-        DisplayChatSection();
+        DisplaySelectedChat();
         loadChatMessages();
         displayUserAddArea();
     }
 
     @Override
-    protected void DisplayChatSection() {
+    public void DisplaySelectedChat() {
         clearPanel();
+
         // get messages
         loadChatMessages();
 
         // make the scroll more smooth
-        addChatAreaToPanel();
+        addChatMessageDisplayAreaToPanel();
 
         // display chat messages
         displayChatMessages();
@@ -199,7 +205,7 @@ public class AdminChatScreen extends ChatScreen {
             subscribeToChat(user, chat);
 
             clearPanel();
-            DisplayChatSection();
+            DisplaySelectedChat();
             clearUserPanel();
 
             // refresh user list
@@ -228,25 +234,36 @@ public class AdminChatScreen extends ChatScreen {
         subscribePanel.add(Box.createVerticalStrut(10)); // spacing
         subscribePanel.add(startButton);
 
-        startButton.addActionListener(e -> {
-            try (EntityManager etm = HibernateUtil.getEmf().createEntityManager()) {
-                etm.getTransaction().begin();
-                Chat chat = etm.find(Chat.class, getChat().getId());
-                chat.setStartTime(Instant.now());
-                etm.persist(chat);
-                etm.getTransaction().commit();
-
-                // set current active chat as started chat
-                setChat(chat);
-
-                DisplayChatSection();
-                loadChatMessages();
-            } catch (Exception ex) {
-                throw new RuntimeException(ex);
-            }
-        });
+        startButton.addActionListener(this::handleChatStart);
 
         chatPanel.add(subscribePanel, BorderLayout.CENTER);
 
+    }
+
+    public void handleChatStart(ActionEvent actionEvent) {
+        try (EntityManager etm = HibernateUtil.getEmf().createEntityManager()) {
+            etm.getTransaction().begin();
+            Chat chat = etm.find(Chat.class, getChat().getId());
+            chat.setStartTime(Instant.now());
+            etm.persist(chat);
+            etm.getTransaction().commit();
+
+            // set current active chat as started chat
+            setChat(chat);
+            DisplaySelectedChat();
+            loadChatMessages();
+            displayUserAddArea();
+
+            // send RMI request
+            try {
+                ServerInterface server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");
+                server.sendAdminStartChat(chat);
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+                ex.getStackTrace();
+            }
+        } catch (Exception ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }
