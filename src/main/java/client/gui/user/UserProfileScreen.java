@@ -47,7 +47,7 @@ public class UserProfileScreen extends UserMenu {
         containerPanel.setLayout(new BoxLayout(containerPanel, BoxLayout.Y_AXIS));
         containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Profile Picture Section
+        // Profile Picture
         profilePicLabel = new JLabel();
         profilePicLabel.setPreferredSize(new Dimension(120, 120));
         profilePicLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
