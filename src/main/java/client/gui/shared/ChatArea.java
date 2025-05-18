@@ -3,6 +3,8 @@ package client.gui.shared;
 import client.gui.user.common.ChatHandler;
 import client.gui.utility.ChatUtility;
 import common.HibernateUtil;
+import common.MessageBroker.NetworkMessage;
+import common.MessageBroker.NetworkMessageType;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
@@ -10,7 +12,6 @@ import models.*;
 import server.ServerInterface;
 
 import javax.swing.*;
-import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.io.File;
@@ -23,6 +24,7 @@ import java.util.List;
 
 public class ChatArea extends JPanel {
     protected final User user;
+
     /**
      * UI Elements for chat area
      */
@@ -32,9 +34,7 @@ public class ChatArea extends JPanel {
     private final JButton sendButton = new JButton("Send");
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
     protected Chat chat;
-    StyledDocument doc;
     JPanel inputPanel;
-
     ChatUtility chatUtility;
 
     public ChatArea(User user) {
@@ -47,16 +47,29 @@ public class ChatArea extends JPanel {
         // initialize chat utility
         chatUtility = new ChatUtility(chatArea);
 
+        // initialize chat status label
         JLabel userMessageLabel = new JLabel(" ");
-        ChatHandler chat = new ChatHandler(chatUtility, userMessageLabel);
+
+        // This thread make sure append message when the new message send by someone else.
+        ChatHandler chat = new ChatHandler(this,chatUtility, userMessageLabel,user);
         Thread chatThread = new Thread(chat);
         chatThread.start();
     }
 
+    /**
+     * Get current selected chat
+     *
+     * @return Chat
+     */
     public Chat getChat() {
         return chat;
     }
 
+    /**
+     * Set the selecte chat
+     *
+     * @param chat
+     */
     public void setChat(Chat chat) {
         this.chat = chat;
     }
@@ -96,8 +109,13 @@ public class ChatArea extends JPanel {
 
     /**
      * Display chat messages or relevant section base on state
+     * This method control which section to show for user/admin base on the current intraction of chat
+     * For Example: Subscriber Button for Not Subscriber users
      */
     public void handleChatDisplayArea() {
+//        // set the chat property in chat utility
+//        chatUtility.setChat(chat);
+
         // check if the user subscribe to the chat
         try {
             if (!isSubscribed()) {
@@ -111,8 +129,8 @@ public class ChatArea extends JPanel {
                 return;
             }
 
-
-            DisplayChatSection();
+            // if nor barriers then show the chat screen
+            DisplaySelectedChat();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
@@ -121,30 +139,40 @@ public class ChatArea extends JPanel {
     /**
      * load chat messages into messages List
      */
-    protected void loadChatMessages() {
-        EntityManager em = HibernateUtil.getEmf().createEntityManager();
-        String query = "select m from ChatMessage m where m.chat.id=:chatId";
-        TypedQuery<ChatMessage> q = em.createQuery(query, ChatMessage.class);
-        System.out.println("Loading Chat Messages for " + chat.getId());
-        q.setParameter("chatId", chat.getId());
+    public void loadChatMessages() {
+        // set the chat property in chat utility
+        chatUtility.setChat(chat);
 
-        messages.clear();
-        messages.addAll(q.getResultList());
+        try {
+            EntityManager em = HibernateUtil.getEmf().createEntityManager();
+            String query = "select m from ChatMessage m where m.chat.id=:chatId";
+            TypedQuery<ChatMessage> q = em.createQuery(query, ChatMessage.class);
+            System.out.println("Loading Chat Messages for " + chat.getId());
+            q.setParameter("chatId", chat.getId());
 
+            messages.clear();
+            messages.addAll(q.getResultList());
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     /**
-     * Display chat section with relavent action for users
+     * Display chat section with relevant action for users
+     * This method make sure to load all chat message to the chat message
+     * display area, also make sure not to show chat send input,
+     * <ul>
+     *     <li>If use leave from chat</li>
+     *     <li>If chat stopped already</li>
+     * </ul>
      */
-    protected void DisplayChatSection() {
+    public void DisplaySelectedChat() {
         clearPanel();
 
         // get messages
         loadChatMessages();
 
-        // make the scroll more smooth
-        addChatAreaToPanel();
-
+        // display chat all chat messages on screen
         displayChatMessages();
 
         //display leave from chat, if user leave from chat
@@ -152,6 +180,7 @@ public class ChatArea extends JPanel {
             displayLeaveFromChatMessage();
             return;
         }
+
         // show the message send area only if not the chat stop
         if (chat.getEndTime() == null) {
             displayMessageSendArea();
@@ -161,7 +190,7 @@ public class ChatArea extends JPanel {
     /**
      * Add chat area to the main panel
      */
-    protected void addChatAreaToPanel() {
+    protected void addChatMessageDisplayAreaToPanel() {
         JScrollPane chatScrollPane = new JScrollPane(chatArea);
         chatScrollPane.getVerticalScrollBar().setUnitIncrement(16);
         chatPanel.add(chatScrollPane, BorderLayout.CENTER);
@@ -187,7 +216,7 @@ public class ChatArea extends JPanel {
     /**
      * Make the user subscriber for given chat
      */
-    protected void subscribeToChat(User user, Chat chat) throws Exception {
+    protected void subscribeToChat(User user, Chat chat) {
         try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
 
             EntityTransaction transaction = et.getTransaction();
@@ -210,7 +239,6 @@ public class ChatArea extends JPanel {
             System.out.println("Unable to subscribe to chat");
             System.out.println(ex.getMessage());
 
-            throw ex;
         }
 
     }
@@ -236,30 +264,34 @@ public class ChatArea extends JPanel {
         subscribePanel.add(Box.createVerticalStrut(10)); // spacing
         subscribePanel.add(subscribeButton);
 
-
         chatPanel.add(subscribePanel, BorderLayout.CENTER);
 
-        subscribeButton.addActionListener((_) -> {
+        // handle when user subscribe chat
+        subscribeButton.addActionListener(this::handleUserSubscribeToChat);
+    }
 
-            try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
+    /**
+     * Handle when user click subscriber button on a chat
+     * @param actionEvent
+     */
+    private void handleUserSubscribeToChat(ActionEvent actionEvent) {
+        subscribeToChat(user, chat);
 
-                subscribeToChat(user, chat);
+        if (chat.getStartTime() == null) {
+            displayChatNotStartedMessage();
+            return;
+        }
 
-                if (chat.getStartTime() == null) {
-                    displayChatNotStartedMessage();
-                    return;
-                }
+        DisplaySelectedChat();
+        loadChatMessages();
 
-                DisplayChatSection();
-                loadChatMessages();
-
-
-            } catch (Exception ex) {
-                System.out.println("Unable to subscribe to chat");
-                System.out.println(ex.getMessage());
-            }
-
-        });
+        try {
+            ServerInterface server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");
+            server.sendUserJoinMessage(user, chat);
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            ex.getStackTrace();
+        }
 
     }
 
@@ -319,7 +351,7 @@ public class ChatArea extends JPanel {
      * Display chat messages f
      */
     protected void displayChatMessages() {
-
+        addChatMessageDisplayAreaToPanel();
         try {
             chatArea.removeAll();
             chatArea.revalidate();
@@ -488,21 +520,33 @@ public class ChatArea extends JPanel {
                 hideMessageSendArea();
                 displayLeaveFromChatMessage();
                 System.out.println(getSubscribers());
+
+                try {
+                    ServerInterface server = (ServerInterface) Naming.lookup("rmi://localhost:1099/server");
+                    server.sendUserLeaveChat(user, getChat());
+
+                } catch (Exception ex) {
+                    System.out.println(ex.getMessage());
+                    ex.getStackTrace();
+                }
+
                 if (getSubscribers().isEmpty()) {
                     System.out.println("Subscriber list is empty");
                     chatUtility.displayInfoMessage("Chat Stopped at " + Instant.now());
                     endChat();
                 }
+
+
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
             return;
         }
 
+
         // create message object
         ChatMessage messageObj = new ChatMessage();
         messageObj.setMessage(message);
-
 
         // set the user who send the message
         messageObj.setUser(user);

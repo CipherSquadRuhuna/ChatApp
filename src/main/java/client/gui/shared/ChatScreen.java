@@ -62,6 +62,9 @@ public class ChatScreen extends ChatArea {
                 setChat(chatEntity);
 
                 handleChatDisplayArea();
+
+                // set current user as online user for selected chat
+
             }
         }
     }
@@ -88,7 +91,7 @@ public class ChatScreen extends ChatArea {
     }
 
     /***
-     * Display all chats
+     * Display all chats available in database
      */
     private void displayChats() {
         // load chats from database

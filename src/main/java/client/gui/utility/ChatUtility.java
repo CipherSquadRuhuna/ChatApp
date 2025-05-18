@@ -2,6 +2,7 @@ package client.gui.utility;
 
 import models.Chat;
 import models.ChatMessage;
+import models.User;
 import models.UserChat;
 
 import javax.imageio.ImageIO;
@@ -17,16 +18,26 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Objects;
 
 public class ChatUtility extends JFrame {
     public final SimpleAttributeSet infoMessageAttr = new SimpleAttributeSet();
     private final JPanel chatArea;
+    private Chat chat;
 
     private final SimpleAttributeSet boldAttr = new SimpleAttributeSet();
 
 
     public ChatUtility(JPanel chatArea) {
         this.chatArea = chatArea;
+    }
+
+    public Chat getChat() {
+        return chat;
+    }
+
+    public void setChat(Chat chat) {
+        this.chat = chat;
     }
 
     /**
@@ -68,6 +79,9 @@ public class ChatUtility extends JFrame {
      */
     public void displayUserMessage(ChatMessage message) {
 
+        // make sure that message is belong to the active chat
+        if(!Objects.equals(message.getChat().getId(), chat.getId())) return;
+
         Instant sendTime = message.getSentAt();
         ZoneId zoneId = ZoneId.systemDefault();
         String formattedTime = sendTime.atZone(zoneId).format(DateTimeFormatter.ofPattern("hh:mm a"));
@@ -87,6 +101,7 @@ public class ChatUtility extends JFrame {
             JPanel bubbleWrapper = new JPanel();
             bubbleWrapper.setLayout(new BorderLayout());
             bubbleWrapper.setOpaque(false); // Let background of chatArea show
+
 
             //  Add horizontal margin via empty border
             bubbleWrapper.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20)); // Left & right padding
@@ -115,9 +130,17 @@ public class ChatUtility extends JFrame {
      */
     public void displayInfoMessage(String message) {
         try {
-//            doc.insertString(doc.getLength(), message, boldAttr);
             JLabel label = new JLabel(message);
             chatArea.add(label);
+            chatArea.revalidate();
+            chatArea.repaint();
+
+            // scroll up to end
+            SwingUtilities.invokeLater(() -> {
+                JScrollBar vertical = ((JScrollPane) chatArea.getParent().getParent()).getVerticalScrollBar();
+                vertical.setValue(vertical.getMaximum());
+            });
+
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -130,11 +153,14 @@ public class ChatUtility extends JFrame {
         try {
 
             for (UserChat subscriber : subscribers) {
-                String userJoinTextLine = subscriber.getUser().getNickName() + " has joined " + subscriber.getSubscribedAt() + " \n";
+                String userJoinTextLine = subscriber.getUser().getNickName() + " has joined " + formatDateTimetoReadable(subscriber.getSubscribedAt()) + " \n";
 
 //                doc.insertString(doc.getLength(), userJoinTextLine, infoMessageAttr);
                 JLabel label = new JLabel(userJoinTextLine);
                 chatArea.add(label);
+                chatArea.add(label);
+                chatArea.revalidate();
+                chatArea.repaint();
             }
 
         } catch (Exception e) {
@@ -146,12 +172,21 @@ public class ChatUtility extends JFrame {
     /**
      * Format time date to readable
      */
-
-    private String formatDateTimetoReadable(Instant instant) {
+    private String formatDateTimetoReadable(Instant instant ) {
         ZoneId zoneId = ZoneId.systemDefault();
         String formatedDateTime = instant.atZone(zoneId).format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a"));
         return formatedDateTime;
     }
+
+    /**
+     * Format time date to readable
+     */
+    private String formatDateTimetoReadable(Instant instant,String format ) {
+        ZoneId zoneId = ZoneId.systemDefault();
+        String formatedDateTime = instant.atZone(zoneId).format(DateTimeFormatter.ofPattern(format));
+        return formatedDateTime;
+    }
+
 
     /**
      * display chat started time in given chat in blue color
@@ -173,6 +208,28 @@ public class ChatUtility extends JFrame {
         String userJoinTextLine = subscriber.getUser().getNickName() + " has joined " + subscriber.getSubscribedAt() + " \n";
         JLabel label = new JLabel(userJoinTextLine);
         chatArea.add(label);
+    }
+
+    /**
+     * display subscriber join message
+     */
+    public void displaySubscriberJoinMessage(User subscriber)  {
+        String userJoinTextLine = subscriber.getNickName() + " has joined " + formatDateTimetoReadable(Instant.now(),"hh:mm a") + " \n";
+        JLabel label = new JLabel(userJoinTextLine);
+        chatArea.add(label);
+        chatArea.revalidate();
+        chatArea.repaint();
+    }
+
+    /**
+     * display subscriber leave message
+     */
+    public void displaySubscriberLeaveMessage(User subscriber)  {
+        String userJoinTextLine = subscriber.getNickName() + " has Leave " + formatDateTimetoReadable(Instant.now(),"hh:mm a") + " \n";
+        JLabel label = new JLabel(userJoinTextLine);
+        chatArea.add(label);
+        chatArea.revalidate();
+        chatArea.repaint();
     }
 
 }
