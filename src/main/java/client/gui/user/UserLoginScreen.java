@@ -22,13 +22,14 @@ public class UserLoginScreen extends JPanel {
     }
 
     private void initComponents() {
-//        //set layout
+
+        //set layout
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60)); // Padding
 
-        // Title
+        // Title Field
         JLabel title = new JLabel("Chat App Login");
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
         title.setForeground(new Color(33, 33, 33));
@@ -37,7 +38,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // Username
+        // Username Field
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -51,7 +52,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Password
+        // Password Field
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         passwordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -65,7 +66,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // Login Button
+        // Set Login Button
         login = new JButton("Login");
         login.setPreferredSize(new Dimension(150, 40));
         login.setMaximumSize(new Dimension(150, 40));
@@ -78,7 +79,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // Register Button
+        // Set Register Button
         JButton register = new JButton("Register");
         register.setPreferredSize(new Dimension(150, 40));
         register.setMaximumSize(new Dimension(150, 40));
@@ -105,6 +106,7 @@ public class UserLoginScreen extends JPanel {
 
                 if (loggedUser != null) {
                     System.out.println(loggedUser.getId() + " " + loggedUser.getNickName());
+
 //                    JOptionPane.showMessageDialog(
 //                            null,
 //                            "Login successful! Welcome " + loggedUser.getUsername(),
