@@ -12,6 +12,7 @@ import java.time.Instant;
 @Table(name = "chat_files")
 public class ChatFile implements Serializable {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "file_id", nullable = false)
     private Integer id;
 

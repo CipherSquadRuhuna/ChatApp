@@ -106,16 +106,13 @@ public class UserLoginScreen extends JPanel {
 
                 if (loggedUser != null) {
                     System.out.println(loggedUser.getId() + " " + loggedUser.getNickName());
-                    ImageIcon setIcon=new ImageIcon("src/main/java/client/assets/check.png");
-                    Image scaledImage = setIcon.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH); // Resize to 48x48
-                    ImageIcon tickIcon = new ImageIcon(scaledImage);
-                    JOptionPane.showMessageDialog(
-                            null,
-                            "Login successful! Welcome " + loggedUser.getUsername(),
-                            "Success", // Title of the dialog
-                            JOptionPane.INFORMATION_MESSAGE,// Message type for icon
-                            tickIcon
-                    );
+
+//                    JOptionPane.showMessageDialog(
+//                            null,
+//                            "Login successful! Welcome " + loggedUser.getUsername(),
+//                            "Success", // Title of the dialog
+//                            JOptionPane.INFORMATION_MESSAGE // Message type for icon
+//                    );
 
 
                     EntityManager em = HibernateUtil.getEmf().createEntityManager();

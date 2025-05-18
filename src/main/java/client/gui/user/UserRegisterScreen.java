@@ -132,7 +132,7 @@ public class UserRegisterScreen extends JPanel {
         String username = usernameField.getText();
         String password = new String(passwordField.getPassword());
         String nickname = nicknameField.getText();
-        String profilePicPath = (selectedFile != null) ? selectedFile.getAbsolutePath() : "No picture";
+        String profilePicPath = (selectedFile != null) ? selectedFile.getAbsolutePath() : null;
 
         // Send this data to the server, store it using Hibernate, etc.
         JOptionPane.showMessageDialog(this, "Registered User:" +
