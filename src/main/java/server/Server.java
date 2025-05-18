@@ -1,8 +1,14 @@
 package server;
 
 import client.UserClient;
+import common.HibernateUtil;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.TypedQuery;
+import models.ChatFile;
 import models.ChatMessage;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
@@ -37,7 +43,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
                 try {
                     Socket socket = serverSocket.accept();
 
-                    UserClient user = new UserClient(2, "Asela");
+                    UserClient user = new UserClient();
                     user.setSocket(socket);
                     addOnlineUser(user);
                 } catch (IOException e) {
@@ -68,6 +74,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
     //send message to all online user
     public void sendBroadcastMessage(ChatMessage message) throws RemoteException {
         System.out.println("Sending broadcast message: " + message.getMessage());
+        saveChat(message);
         for (UserClient user : onlineUsers) {
             System.out.println("user: " + user.getSocket());
 
@@ -80,6 +87,31 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
 //                throw new RuntimeException(e);
                 System.out.println("Other Exception: " + e.getMessage());
             }
+        }
+    }
+
+    public void saveChat(ChatMessage chatMessage) {
+        //find the chat file location
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        String query = "select m from ChatFile m where m.chat.id=:chatId";
+        TypedQuery<ChatFile> chatFile = em.createQuery(query, ChatFile.class);
+        chatFile.setParameter("chatId", chatMessage.getChat().getId());
+
+        String filePath = chatFile.getSingleResult().getFilePath();
+        if (filePath == null) return;
+
+        File logFile = new File(filePath);
+        try (FileWriter fw = new FileWriter(logFile, true)) {
+            String messageLog = chatMessage.getMessage() + " :by " + chatMessage.getUser().getUsername();
+            String messageLogDate = "\t at: " + chatMessage.getSentAt() + "\n";
+            fw.append(messageLog + messageLogDate);
+//            fw.flush();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            em.close();
+
         }
     }
 

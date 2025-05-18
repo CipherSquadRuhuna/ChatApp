@@ -97,6 +97,14 @@ public class ChatUtility extends JFrame {
             chatArea.add(bubbleWrapper);
             chatArea.add(Box.createVerticalStrut(20));
 
+            chatArea.revalidate();
+            chatArea.repaint();
+
+            SwingUtilities.invokeLater(() -> {
+                JScrollBar vertical = ((JScrollPane) chatArea.getParent().getParent()).getVerticalScrollBar();
+                vertical.setValue(vertical.getMaximum());
+            });
+
         } catch (Exception e) {
             e.printStackTrace();
         }

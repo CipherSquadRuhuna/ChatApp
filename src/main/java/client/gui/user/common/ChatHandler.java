@@ -9,16 +9,14 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 
 public class ChatHandler implements Runnable {
-    JPanel chatArea;
+
     JLabel userMessageLabel;
-
-
     ChatUtility chatUtility;
 
-    public ChatHandler(JPanel chatArea, JLabel userMessageLabel) {
-        this.chatArea = chatArea;
+    public ChatHandler(ChatUtility chatUtility, JLabel userMessageLabel) {
         this.userMessageLabel = userMessageLabel;
         this.chatUtility = chatUtility;
+
     }
 
     @Override
@@ -30,7 +28,6 @@ public class ChatHandler implements Runnable {
                 ChatMessage message = (ChatMessage) in.readObject();
 
                 // show the chat message only currently that chat is active
-
                 chatUtility.displayUserMessage(message);
 
             }
@@ -39,4 +36,6 @@ public class ChatHandler implements Runnable {
 
         }
     }
+
+
 }

@@ -13,6 +13,8 @@ import javax.swing.*;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileWriter;
 import java.rmi.Naming;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -46,7 +48,7 @@ public class ChatArea extends JPanel {
         chatUtility = new ChatUtility(chatArea);
 
         JLabel userMessageLabel = new JLabel(" ");
-        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel);
+        ChatHandler chat = new ChatHandler(chatUtility, userMessageLabel);
         Thread chatThread = new Thread(chat);
         chatThread.start();
     }
@@ -401,6 +403,9 @@ public class ChatArea extends JPanel {
      * End current chat
      */
     private void endChat() {
+        /**
+         * Update database record that chat stopped
+         */
         try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
             em.getTransaction().begin();
             Chat chat = em.find(Chat.class, getChat().getId());
@@ -408,6 +413,29 @@ public class ChatArea extends JPanel {
             chat.setEndTime(Instant.now());
             em.persist(chat);
             em.getTransaction().commit();
+        }
+
+        /**
+         * Update file record that chat stopped
+         */
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        String query = "select m from ChatFile m where m.chat.id=:chatId";
+        TypedQuery<ChatFile> chatFile = em.createQuery(query, ChatFile.class);
+        chatFile.setParameter("chatId", getChat().getId());
+
+        String filePath = chatFile.getSingleResult().getFilePath();
+        if (filePath == null) return;
+
+        File logFile = new File(filePath);
+        try (FileWriter fw = new FileWriter(logFile, true)) {
+            String messageLog = "Chat Stopped At: " + Instant.now();
+            fw.append(messageLog + messageLog);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            em.close();
+
         }
     }
 
