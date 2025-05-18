@@ -45,6 +45,10 @@ public class ChatScreen extends ChatArea {
         showChatStatusLabel();
     }
 
+    /**
+     * Trigger when the user select a specific chat
+     * @param e
+     */
     private void handleChatSelection(ListSelectionEvent e) {
         if (!e.getValueIsAdjusting()) {
             int selectedIndex = chatList.getSelectedIndex();
@@ -62,6 +66,10 @@ public class ChatScreen extends ChatArea {
         }
     }
 
+    /**
+     * Return all the chats available
+     * @return ChatList
+     */
     private DefaultListModel<String> loadChatList() {
 
         EntityManager em = HibernateUtil.getEmf().createEntityManager();
@@ -79,6 +87,9 @@ public class ChatScreen extends ChatArea {
         return listModel;
     }
 
+    /***
+     * Display all chats
+     */
     private void displayChats() {
         // load chats from database
         chatList = new JList<>(loadChatList());
@@ -90,6 +101,9 @@ public class ChatScreen extends ChatArea {
         chatList.addListSelectionListener(this::handleChatSelection);
     }
 
+    /**
+     * Label to show the chat status
+     */
     private void showChatStatusLabel() {
         rightPanel.add(userMessageLabel, BorderLayout.NORTH);
     }
