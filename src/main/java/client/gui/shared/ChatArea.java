@@ -10,10 +10,11 @@ import models.*;
 import server.ServerInterface;
 
 import javax.swing.*;
-import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyledDocument;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.io.File;
+import java.io.FileWriter;
 import java.rmi.Naming;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class ChatArea extends JPanel {
      * UI Elements for chat area
      */
     protected final JPanel chatPanel = new JPanel(new BorderLayout());
-    private final JTextPane chatArea = new JTextPane();
+    private final JPanel chatArea = new JPanel();
     private final JTextField messageField = new JTextField();
     private final JButton sendButton = new JButton("Send");
     private final ArrayList<ChatMessage> messages = new ArrayList<>();
@@ -39,11 +40,15 @@ public class ChatArea extends JPanel {
     public ChatArea(User user) {
         this.user = user;
 
+        // set chat area properties
+        chatArea.setLayout(new BoxLayout(chatArea, BoxLayout.Y_AXIS));
+        chatArea.setBackground(Color.WHITE);
+
         // initialize chat utility
         chatUtility = new ChatUtility(chatArea);
 
         JLabel userMessageLabel = new JLabel(" ");
-        ChatHandler chat = new ChatHandler(chatArea, userMessageLabel, chatUtility);
+        ChatHandler chat = new ChatHandler(chatUtility, userMessageLabel);
         Thread chatThread = new Thread(chat);
         chatThread.start();
     }
@@ -63,7 +68,6 @@ public class ChatArea extends JPanel {
         chatPanel.removeAll();
         chatPanel.revalidate();
         chatPanel.repaint();
-        chatArea.setText("");
     }
 
     /**
@@ -107,6 +111,7 @@ public class ChatArea extends JPanel {
                 return;
             }
 
+
             DisplayChatSection();
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -137,19 +142,29 @@ public class ChatArea extends JPanel {
         // get messages
         loadChatMessages();
 
-        // Chat Display Area
-        doc = chatArea.getStyledDocument();
-        doc.setCharacterAttributes(0, doc.getLength(), new SimpleAttributeSet(), false);
-        chatArea.setEditable(false);
-        JScrollPane chatScrollPane = new JScrollPane(chatArea);
-        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
+        // make the scroll more smooth
+        addChatAreaToPanel();
 
         displayChatMessages();
+
+        //display leave from chat, if user leave from chat
         if (isUnsubscribed()) {
             displayLeaveFromChatMessage();
             return;
         }
-        displayMessageSendArea();
+        // show the message send area only if not the chat stop
+        if (chat.getEndTime() == null) {
+            displayMessageSendArea();
+        }
+    }
+
+    /**
+     * Add chat area to the main panel
+     */
+    protected void addChatAreaToPanel() {
+        JScrollPane chatScrollPane = new JScrollPane(chatArea);
+        chatScrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        chatPanel.add(chatScrollPane, BorderLayout.CENTER);
     }
 
     /**
@@ -228,22 +243,6 @@ public class ChatArea extends JPanel {
 
             try (EntityManager et = HibernateUtil.getEmf().createEntityManager()) {
 
-//                EntityTransaction transaction = et.getTransaction();
-//                transaction.begin();
-//
-//                UserChatId userChatId = new UserChatId();
-//                userChatId.setUserId(user.getId());
-//                userChatId.setChatId(chat.getId());
-//
-//                UserChat newChatSubscription = new UserChat();
-//                newChatSubscription.setId(userChatId);
-//                newChatSubscription.setChat(chat);
-//                newChatSubscription.setUser(user);
-//                newChatSubscription.setSubscribedAt(Instant.now());
-//
-//                et.persist(newChatSubscription);
-//                transaction.commit();
-
                 subscribeToChat(user, chat);
 
                 if (chat.getStartTime() == null) {
@@ -267,7 +266,7 @@ public class ChatArea extends JPanel {
     /**
      * display message send area
      */
-    private void displayMessageSendArea() {
+    protected void displayMessageSendArea() {
         inputPanel = new JPanel(new BorderLayout());
         inputPanel.add(messageField, BorderLayout.CENTER);
         inputPanel.add(sendButton, BorderLayout.EAST);
@@ -319,9 +318,13 @@ public class ChatArea extends JPanel {
     /**
      * Display chat messages f
      */
-    private void displayChatMessages() {
+    protected void displayChatMessages() {
 
         try {
+            chatArea.removeAll();
+            chatArea.revalidate();
+            chatArea.repaint();
+
             chatUtility.displayChatStartedMessage(chat);
             List<UserChat> tempSubscriberList = getSubscribers();
 
@@ -331,9 +334,11 @@ public class ChatArea extends JPanel {
                 return;
             }
 
+
             // Append each message
             for (ChatMessage message : messages) {
-                // check is subscriber join
+
+                // check is subscriber join meanwhile
                 try {
                     List<UserChat> toRemove = new ArrayList<>();
                     for (UserChat subscriber : tempSubscriberList) {
@@ -350,6 +355,7 @@ public class ChatArea extends JPanel {
                     System.out.println("Unable to display subscriber message");
                     e.printStackTrace();
                 }
+                //display the message
                 chatUtility.displayUserMessage(message);
 
             }
@@ -360,9 +366,10 @@ public class ChatArea extends JPanel {
             }
 
             // show chat stop message is stopped
-            if(chat.getEndTime() != null) {
+            if (chat.getEndTime() != null) {
                 System.out.println("Chat ended");
                 chatUtility.displayInfoMessage("Chat Stopped At: " + chat.getEndTime());
+//                hideMessageSendArea();
             }
 
 
@@ -395,14 +402,40 @@ public class ChatArea extends JPanel {
     /**
      * End current chat
      */
-    private void endChat(){
-        try(EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
+    private void endChat() {
+        /**
+         * Update database record that chat stopped
+         */
+        try (EntityManager em = HibernateUtil.getEmf().createEntityManager()) {
             em.getTransaction().begin();
-            Chat chat = em.find(Chat.class,getChat().getId());
+            Chat chat = em.find(Chat.class, getChat().getId());
             System.out.println(chat);
             chat.setEndTime(Instant.now());
             em.persist(chat);
             em.getTransaction().commit();
+        }
+
+        /**
+         * Update file record that chat stopped
+         */
+        EntityManager em = HibernateUtil.getEmf().createEntityManager();
+        String query = "select m from ChatFile m where m.chat.id=:chatId";
+        TypedQuery<ChatFile> chatFile = em.createQuery(query, ChatFile.class);
+        chatFile.setParameter("chatId", getChat().getId());
+
+        String filePath = chatFile.getSingleResult().getFilePath();
+        if (filePath == null) return;
+
+        File logFile = new File(filePath);
+        try (FileWriter fw = new FileWriter(logFile, true)) {
+            String messageLog = "Chat Stopped At: " + Instant.now();
+            fw.append(messageLog + messageLog);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        } finally {
+            em.close();
+
         }
     }
 

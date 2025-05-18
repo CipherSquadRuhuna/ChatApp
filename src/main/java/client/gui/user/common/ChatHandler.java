@@ -9,15 +9,14 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 
 public class ChatHandler implements Runnable {
-    JTextPane chatArea;
-    JLabel userMessageLabel;
 
+    JLabel userMessageLabel;
     ChatUtility chatUtility;
 
-    public ChatHandler(JTextPane chatArea, JLabel userMessageLabel, ChatUtility chatUtility) {
-        this.chatArea = chatArea;
+    public ChatHandler(ChatUtility chatUtility, JLabel userMessageLabel) {
         this.userMessageLabel = userMessageLabel;
         this.chatUtility = chatUtility;
+
     }
 
     @Override
@@ -27,11 +26,16 @@ public class ChatHandler implements Runnable {
                 ObjectInputStream in = new ObjectInputStream(socket.getInputStream());
                 // we have message object now
                 ChatMessage message = (ChatMessage) in.readObject();
+
+                // show the chat message only currently that chat is active
                 chatUtility.displayUserMessage(message);
+
             }
         } catch (IOException | ClassNotFoundException e) {
             System.out.println(e.getMessage());
 
         }
     }
+
+
 }
