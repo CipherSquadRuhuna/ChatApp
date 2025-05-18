@@ -9,6 +9,10 @@ import javax.swing.*;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import javax.imageio.ImageIO;
 
 public class UserProfileScreen extends UserMenu {
     private JTextField emailField;
@@ -22,6 +26,9 @@ public class UserProfileScreen extends UserMenu {
     private JLabel displayEmailLabel;
     private JLabel displayUsernameLabel;
     private JLabel displayNicknameLabel;
+
+    private JLabel profilePicLabel;
+    private File selectedImageFile;
 
     private final AppScreen screen;
     private User user;
@@ -39,6 +46,23 @@ public class UserProfileScreen extends UserMenu {
         JPanel containerPanel = new JPanel();
         containerPanel.setLayout(new BoxLayout(containerPanel, BoxLayout.Y_AXIS));
         containerPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+
+        // Profile Picture Section
+        profilePicLabel = new JLabel();
+        profilePicLabel.setPreferredSize(new Dimension(120, 120));
+        profilePicLabel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+
+        JButton changePicButton = new JButton("Change Picture");
+        changePicButton.addActionListener(e -> changeProfilePicture());
+
+        JPanel picPanel = new JPanel();
+        picPanel.setLayout(new BoxLayout(picPanel, BoxLayout.Y_AXIS));
+        picPanel.add(profilePicLabel);
+        picPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        picPanel.add(changePicButton);
+
+        containerPanel.add(picPanel);
+        containerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
 
         // Display Section
         JPanel displayPanel = new JPanel(new GridLayout(3, 1, 5, 5));
@@ -135,6 +159,21 @@ public class UserProfileScreen extends UserMenu {
         emailField.setText(user.getEmail());
         usernameField.setText(user.getUsername());
         nicknameField.setText(user.getNickName());
+
+        // Load and display profile picture
+        if (user.getProfilePicturePath() != null && !user.getProfilePicturePath().equals("No picture")) {
+            try {
+                BufferedImage img = ImageIO.read(new File(user.getProfilePicturePath()));
+                Image scaledImg = img.getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+                profilePicLabel.setIcon(new ImageIcon(scaledImg));
+                profilePicLabel.setText("");
+            } catch (IOException e) {
+                profilePicLabel.setText("Image not found");
+            }
+        } else {
+            profilePicLabel.setText("No picture");
+            profilePicLabel.setIcon(null);
+        }
 
         // Clear password fields
         currentPasswordField.setText("");
@@ -244,6 +283,52 @@ public class UserProfileScreen extends UserMenu {
             JOptionPane.showMessageDialog(this, "Error changing password: " + e.getMessage());
         } finally {
             em.close();
+        }
+    }
+
+    private void changeProfilePicture() {
+        if (user == null) {
+            JOptionPane.showMessageDialog(this, "No user loaded.");
+            return;
+        }
+
+        JFileChooser fileChooser = new JFileChooser();
+        int result = fileChooser.showOpenDialog(this);
+        if (result == JFileChooser.APPROVE_OPTION) {
+            selectedImageFile = fileChooser.getSelectedFile();
+            String imagePath = selectedImageFile.getAbsolutePath();
+
+            EntityManager em = HibernateUtil.getEmf().createEntityManager();
+            EntityTransaction tx = em.getTransaction();
+
+            try {
+                tx.begin();
+                User dbUser = em.find(User.class, user.getId());
+                if (dbUser != null) {
+                    dbUser.setProfilePicturePath(imagePath);
+                    em.merge(dbUser);
+                    tx.commit();
+
+                    user.setProfilePicturePath(imagePath);
+
+                    // Load and update UI
+                    BufferedImage img = ImageIO.read(selectedImageFile);
+                    Image scaledImg = img.getScaledInstance(120, 120, Image.SCALE_SMOOTH);
+                    profilePicLabel.setIcon(new ImageIcon(scaledImg));
+                    profilePicLabel.setText("");
+
+                    JOptionPane.showMessageDialog(this, "Profile picture updated.");
+                } else {
+                    JOptionPane.showMessageDialog(this, "User not found.");
+                    tx.rollback();
+                }
+            } catch (Exception ex) {
+                if (tx.isActive()) tx.rollback();
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Failed to update profile picture: " + ex.getMessage());
+            } finally {
+                em.close();
+            }
         }
     }
 }
