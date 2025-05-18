@@ -104,8 +104,7 @@ public class Server extends UnicastRemoteObject implements ServerInterface {
         try (FileWriter fw = new FileWriter(logFile, true)) {
             String messageLog = chatMessage.getMessage() + " :by " + chatMessage.getUser().getUsername();
             String messageLogDate = "\t at: " + chatMessage.getSentAt() + "\n";
-            fw.append(messageLog + messageLogDate);
-//            fw.flush();
+            fw.append(messageLog).append(messageLogDate);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
