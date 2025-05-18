@@ -79,15 +79,26 @@ public class UserRegisterScreen extends JPanel {
 
         add(profilePicPanel, getConstraints(1, y++));
 
+        //Exit and Register buttons
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+
         // Register button
         JButton registerButton = new JButton("Register");
         registerButton.addActionListener(e -> registerUser());
+
+        //Exit Button
+        JButton exitButton = new JButton("Exit");
+        exitButton.addActionListener(e -> screen.showLoginScreen());
+
+        buttonPanel.add(exitButton);
+        buttonPanel.add(registerButton);
+
         gbc = new GridBagConstraints();
         gbc.gridx = 1;
         gbc.gridy = y;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(20, 10, 10, 10);
-        add(registerButton, gbc);
+        add(buttonPanel, gbc);
 
 //        setLocationRelativeTo(null);
         setVisible(true);
@@ -111,7 +122,7 @@ public class UserRegisterScreen extends JPanel {
         String nickname = nicknameField.getText();
         String profilePicPath = (selectedFile != null) ? selectedFile.getAbsolutePath() : "No picture";
 
-        // You can now send this data to the server, store it using Hibernate, etc.
+        // Send this data to the server, store it using Hibernate, etc.
         JOptionPane.showMessageDialog(this, "Registered User:" +
                 "\nEmail: " + email +
                 "\nUsername: " + username +
