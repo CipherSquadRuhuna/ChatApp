@@ -27,46 +27,69 @@ public class UserRegisterScreen extends JPanel {
     }
 
     public void initialize() {
-        screen.setTitle("User Registration");
-        setSize(400, 500);
+        screen.setTitle("Register Now");
         screen.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setLayout(new GridBagLayout()); // use layout directly on frame
+        screen.setSize(500, 600);
+        setLayout(new BorderLayout());
+
+        // Center panel to hold form
+        JPanel formPanel = new JPanel();
+        formPanel.setLayout(new GridBagLayout());
+        formPanel.setBackground(Color.WHITE);
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // padding around components
+        gbc.insets = new Insets(10, 10, 10, 10);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.CENTER;
         gbc.gridx = 0;
-        gbc.anchor = GridBagConstraints.WEST;
+        gbc.gridy = 0;
+        gbc.gridwidth = 2;
 
-        int y = 0; // row counter
+        JLabel title = new JLabel("Register to Chat App");
+        title.setFont(new Font("Arial", Font.BOLD, 20));
+        title.setHorizontalAlignment(SwingConstants.CENTER);
+        formPanel.add(title, gbc);
+
+        gbc.gridwidth = 1;
+        gbc.gridy++;
 
         // Email
-        add(new JLabel("Email:"), getConstraints(0, y));
+        formPanel.add(new JLabel("Email:"), gbc);
+        gbc.gridx = 1;
         emailField = new JTextField(20);
-        add(emailField, getConstraints(1, y++));
+        formPanel.add(emailField, gbc);
 
         // Username
-        add(new JLabel("Username:"), getConstraints(0, y));
+        gbc.gridy++; gbc.gridx = 0;
+        formPanel.add(new JLabel("Username:"), gbc);
+        gbc.gridx = 1;
         usernameField = new JTextField(20);
-        add(usernameField, getConstraints(1, y++));
+        formPanel.add(usernameField, gbc);
 
         // Password
-        add(new JLabel("Password:"), getConstraints(0, y));
+        gbc.gridy++; gbc.gridx = 0;
+        formPanel.add(new JLabel("Password:"), gbc);
+        gbc.gridx = 1;
         passwordField = new JPasswordField(20);
-        add(passwordField, getConstraints(1, y++));
+        formPanel.add(passwordField, gbc);
 
-        // Nick Name
-        add(new JLabel("Nick Name:"), getConstraints(0, y));
+        // Nickname
+        gbc.gridy++; gbc.gridx = 0;
+        formPanel.add(new JLabel("Nick Name:"), gbc);
+        gbc.gridx = 1;
         nicknameField = new JTextField(20);
-        add(nicknameField, getConstraints(1, y++));
+        formPanel.add(nicknameField, gbc);
 
-        // Profile Picture
-        add(new JLabel("Profile Picture:"), getConstraints(0, y));
+        // Profile picture
+        gbc.gridy++; gbc.gridx = 0;
+        formPanel.add(new JLabel("Profile Picture:"), gbc);
+        gbc.gridx = 1;
+        JPanel picPanel = new JPanel(new BorderLayout(5, 0));
         profilePicLabel = new JLabel("No file chosen");
         JButton browseButton = new JButton("Browse");
-
-        JPanel profilePicPanel = new JPanel(new BorderLayout(5, 0));
-        profilePicPanel.add(profilePicLabel , BorderLayout.CENTER);
-        profilePicPanel.add(browseButton, BorderLayout.EAST);
+        picPanel.add(profilePicLabel, BorderLayout.CENTER);
+        picPanel.add(browseButton, BorderLayout.EAST);
+        formPanel.add(picPanel, gbc);
 
         browseButton.addActionListener(e -> {
             JFileChooser fileChooser = new JFileChooser();
@@ -77,43 +100,32 @@ public class UserRegisterScreen extends JPanel {
             }
         });
 
-        add(profilePicPanel, getConstraints(1, y++));
+        // Buttons
+        gbc.gridy++; gbc.gridx = 0; gbc.gridwidth = 2;
+        gbc.anchor = GridBagConstraints.CENTER;
 
-        //Exit and Register buttons
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-
-        // Register button
+        JPanel buttonPanel = new JPanel(new FlowLayout());
         JButton registerButton = new JButton("Register");
-        registerButton.addActionListener(e -> registerUser());
+        registerButton.setBackground(new Color(76, 175, 80)); // Green
+        registerButton.setForeground(Color.WHITE);
+        registerButton.setPreferredSize(new Dimension(120, 35));
 
-        //Exit Button
-        JButton exitButton = new JButton("Exit");
+        JButton exitButton = new JButton("Back to Login");
+        exitButton.setBackground(new Color(33, 150, 243)); // Blue
+        exitButton.setForeground(Color.WHITE);
+        exitButton.setPreferredSize(new Dimension(120, 35));
+
+        registerButton.addActionListener(e -> registerUser());
         exitButton.addActionListener(e -> screen.showLoginScreen());
 
         buttonPanel.add(exitButton);
         buttonPanel.add(registerButton);
 
-        gbc = new GridBagConstraints();
-        gbc.gridx = 1;
-        gbc.gridy = y;
-        gbc.anchor = GridBagConstraints.EAST;
-        gbc.insets = new Insets(20, 10, 10, 10);
-        add(buttonPanel, gbc);
+        formPanel.add(buttonPanel, gbc);
 
-//        setLocationRelativeTo(null);
+        add(formPanel, BorderLayout.CENTER);
         setVisible(true);
     }
-
-    // Reusable method to generate constraints
-    private GridBagConstraints getConstraints(int x, int y) {
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.gridx = x;
-        gbc.gridy = y;
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.insets = new Insets(5, 10, 5, 10);
-        return gbc;
-    }
-
 
     private void registerUser() {
         String email = emailField.getText();
@@ -146,7 +158,7 @@ public class UserRegisterScreen extends JPanel {
         User user = new User();
         user.setEmail(email);
         user.setUsername(username);
-        user.setPassword(password); // Consider hashing in production!
+        user.setPassword(password);
         user.setNickName(nickname);
         user.setProfilePicturePath(profilePicPath);
         user.setIsAdmin(false);
@@ -155,7 +167,15 @@ public class UserRegisterScreen extends JPanel {
         UserService userService =new UserService();
         userService.saveUser(user);
 
-        JOptionPane.showMessageDialog(this, "User registered successfully!");
+        ImageIcon setIcon=new ImageIcon("src/main/java/client/assets/check.png");
+        Image scaledImage = setIcon.getImage().getScaledInstance(48, 48, Image.SCALE_SMOOTH); // Resize to 48x48
+        ImageIcon tickIcon = new ImageIcon(scaledImage);
+        JOptionPane.showMessageDialog(this, "User registered successfully!",
+                "Success", // Title of the dialog
+                JOptionPane.INFORMATION_MESSAGE,
+                tickIcon
+        );
+          // directed back to login page
         screen.showLoginScreen();
 
     }
