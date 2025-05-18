@@ -65,7 +65,7 @@ public class AppScreen extends JFrame {
     public void showAdminChatScreen() {
         JPanel adminChatScreen = new AdminChatScreen(this);
         containerPanel.add(adminChatScreen, "AdminChat");
-        setTitle("Chat App");
+        setTitle("Chat App" + user.getNickName());
         cardLayout.show(containerPanel, "AdminChat");
     }
 
@@ -75,7 +75,7 @@ public class AppScreen extends JFrame {
     public void showAdminChatScreen(Chat chat) {
         JPanel adminChatScreen = new AdminChatScreen(this, chat);
         containerPanel.add(adminChatScreen, "AdminChat");
-        setTitle("Chat App");
+        setTitle( user.getNickName());
         cardLayout.show(containerPanel, "AdminChat");
     }
 
@@ -85,7 +85,7 @@ public class AppScreen extends JFrame {
     public void showUserChatScreen() {
         JPanel userChatScreen = new UserChatScreen(this);
         containerPanel.add(userChatScreen, "UserChat");
-        setTitle("Chat App");
+        setTitle(user.getNickName());
         cardLayout.show(containerPanel, "UserChat");
     }
 
