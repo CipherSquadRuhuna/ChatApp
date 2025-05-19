@@ -33,6 +33,7 @@ public class Menu extends JPanel {
             screen.showUserProfileScreen();
         });
 
+
     }
 
     protected void createExitMenu() {

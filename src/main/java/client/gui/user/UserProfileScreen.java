@@ -146,7 +146,26 @@ public class UserProfileScreen extends UserMenu {
 
         containerPanel.add(passwordPanel);
 
-        add(containerPanel, BorderLayout.CENTER);
+        // Back Button
+        JButton backButton = new JButton("Back");
+        backButton.setAlignmentX(Component.RIGHT_ALIGNMENT);
+        backButton.addActionListener(e -> {
+            screen.setUser(user);
+            screen.showUserChatScreen();
+        });
+
+        JPanel backPanel = new JPanel();
+        backPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        backPanel.add(backButton);
+
+        containerPanel.add(Box.createRigidArea(new Dimension(0, 10)));
+        containerPanel.add(backPanel);
+
+        // Wrap in scroll pane
+        JScrollPane scrollPane = new JScrollPane(containerPanel);
+        scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16); // Smooth scrolling
+        add(scrollPane, BorderLayout.CENTER);
     }
 
     public void loadUser(User user) {
@@ -160,7 +179,6 @@ public class UserProfileScreen extends UserMenu {
         usernameField.setText(user.getUsername());
         nicknameField.setText(user.getNickName());
 
-        // Load and display profile picture
         if (user.getProfilePicturePath() != null && !user.getProfilePicturePath().equals("No picture")) {
             try {
                 BufferedImage img = ImageIO.read(new File(user.getProfilePicturePath()));
@@ -175,7 +193,6 @@ public class UserProfileScreen extends UserMenu {
             profilePicLabel.setIcon(null);
         }
 
-        // Clear password fields
         currentPasswordField.setText("");
         newPasswordField.setText("");
         confirmPasswordField.setText("");
@@ -311,7 +328,6 @@ public class UserProfileScreen extends UserMenu {
 
                     user.setProfilePicturePath(imagePath);
 
-                    // Load and update UI
                     BufferedImage img = ImageIO.read(selectedImageFile);
                     Image scaledImg = img.getScaledInstance(120, 120, Image.SCALE_SMOOTH);
                     profilePicLabel.setIcon(new ImageIcon(scaledImg));
