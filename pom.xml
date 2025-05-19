@@ -92,9 +92,9 @@
                     <type>EXE</type>
                     <winshortcut>true</winshortcut>
                     <winmenu>true</winmenu>
-<!--                    <icon>${project.basedir}/src/main/resources/app.ico</icon>-->
+                    <!--                    <icon>${project.basedir}/src/main/resources/app.ico</icon>-->
 
-                        <javaoptions>-Xmx512m</javaoptions>
+                    <javaoptions>-Xmx512m</javaoptions>
                 </configuration>
             </plugin>
             <plugin>
@@ -103,7 +103,7 @@
                 <configuration>
                     <source>23</source>
                     <target>23</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
+<!--                    <compilerArgs>&#45;&#45;enable-preview</compilerArgs>-->
                 </configuration>
             </plugin>
 
