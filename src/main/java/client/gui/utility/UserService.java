@@ -1,21 +1,13 @@
-package Utility;
+package client.gui.utility;
 
 import models.User;
 import jakarta.persistence.*;
-import org.hibernate.SessionFactory;
 
 public class UserService {
 
-    private EntityManagerFactory emf;
-
-    public UserService() {
-        emf = Persistence.createEntityManagerFactory("default");
-    }
-
     public void saveUser(User user) {
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = JPAUtil.getEntityManager();
 
-//        SessionFactory factory= BuidSessionFactory();
         try {
             em.getTransaction().begin();
             em.persist(user);
@@ -29,8 +21,7 @@ public class UserService {
     }
 
     public User userlogin(String username, String password) {
-        EntityManagerFactory emf = Persistence.createEntityManagerFactory("default");
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = JPAUtil.getEntityManager();
 
         try {
             TypedQuery<User> query = em.createQuery(
@@ -38,23 +29,11 @@ public class UserService {
             query.setParameter("username", username);
             query.setParameter("password", password);
 
-//            return query.getSingleResult(); // Login success
-            User user=query.getSingleResult();
-            return user;
+            return query.getSingleResult(); // Login successful
         } catch (NoResultException e) {
             return null; // Login failed
-
         } finally {
             em.close();
-            emf.close();
         }
     }
-
-
-
-
-    public void close() {
-        emf.close();
-    }
 }
-

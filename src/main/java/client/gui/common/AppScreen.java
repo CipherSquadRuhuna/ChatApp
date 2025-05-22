@@ -8,6 +8,7 @@ import client.gui.user.UserChatScreen;
 import client.gui.user.UserLoginScreen;
 import client.gui.user.UserProfileScreen;
 import client.gui.user.UserRegisterScreen;
+import models.Chat;
 import models.User;
 
 import javax.swing.*;
@@ -42,6 +43,7 @@ public class AppScreen extends JFrame {
 
     /**
      * Change title of the window
+     *
      * @param title - new title that need to change
      */
     public void changeTitle(String title) {
@@ -63,7 +65,17 @@ public class AppScreen extends JFrame {
     public void showAdminChatScreen() {
         JPanel adminChatScreen = new AdminChatScreen(this);
         containerPanel.add(adminChatScreen, "AdminChat");
-        setTitle("Chat App");
+        setTitle("Chat App" + user.getNickName());
+        cardLayout.show(containerPanel, "AdminChat");
+    }
+
+    /**
+     * Show chat screen for users how login as admin when chat seleted
+     */
+    public void showAdminChatScreen(Chat chat) {
+        JPanel adminChatScreen = new AdminChatScreen(this, chat);
+        containerPanel.add(adminChatScreen, "AdminChat");
+        setTitle( user.getNickName());
         cardLayout.show(containerPanel, "AdminChat");
     }
 
@@ -73,7 +85,7 @@ public class AppScreen extends JFrame {
     public void showUserChatScreen() {
         JPanel userChatScreen = new UserChatScreen(this);
         containerPanel.add(userChatScreen, "UserChat");
-        setTitle("Chat App");
+        setTitle(user.getNickName());
         cardLayout.show(containerPanel, "UserChat");
     }
 

@@ -1,10 +1,9 @@
 package client.gui.user;
 
-import Utility.UserService;
+import client.gui.utility.UserService;
 import client.gui.common.AppScreen;
 import common.HibernateUtil;
 import jakarta.persistence.EntityManager;
-import models.User;
 
 import javax.swing.*;
 import java.awt.*;
@@ -23,41 +22,14 @@ public class UserLoginScreen extends JPanel {
     }
 
     private void initComponents() {
-//        //set layout
-//        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-//
-//        username = new JTextField();
-//        username.setMaximumSize(new Dimension(500,50));
-//        username.setAlignmentX(Component.CENTER_ALIGNMENT);
-//
-//        password = new JPasswordField();
-//        password.setMaximumSize(new Dimension(500,50));
-//        password.setAlignmentX(Component.CENTER_ALIGNMENT);
-//
-//        login = new JButton("Login");
-//        login.setAlignmentX(Component.CENTER_ALIGNMENT);
-//
-//
-//        // user register button
-//        JButton register = new JButton("Register");
-//        register.setAlignmentX(Component.CENTER_ALIGNMENT);
-//        add(register);
-//
-//        JLabel usernameLabel = new JLabel("Username:");
-//        usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-//        usernameLabel.setMaximumSize(new Dimension(500,50));
-//
-//        add(usernameLabel);
-//        add(username);
-//        add(new JLabel("Password:"));
-//        add(password);
-//        add(login);
+
+        //set layout
 
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBackground(Color.WHITE);
         setBorder(BorderFactory.createEmptyBorder(40, 60, 40, 60)); // Padding
 
-        // Title
+        // Title Field
         JLabel title = new JLabel("Chat App Login");
         title.setFont(new Font("SansSerif", Font.BOLD, 24));
         title.setForeground(new Color(33, 33, 33));
@@ -66,7 +38,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // Username
+        // Username Field
         JLabel usernameLabel = new JLabel("Username:");
         usernameLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -80,7 +52,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 20)));
 
-        // Password
+        // Password Field
         JLabel passwordLabel = new JLabel("Password:");
         passwordLabel.setFont(new Font("SansSerif", Font.PLAIN, 16));
         passwordLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -94,7 +66,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 30)));
 
-        // Login Button
+        // Set Login Button
         login = new JButton("Login");
         login.setPreferredSize(new Dimension(150, 40));
         login.setMaximumSize(new Dimension(150, 40));
@@ -107,7 +79,7 @@ public class UserLoginScreen extends JPanel {
 
         add(Box.createRigidArea(new Dimension(0, 15)));
 
-        // Register Button
+        // Set Register Button
         JButton register = new JButton("Register");
         register.setPreferredSize(new Dimension(150, 40));
         register.setMaximumSize(new Dimension(150, 40));
@@ -121,60 +93,49 @@ public class UserLoginScreen extends JPanel {
         login.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-
-                // get sample user for testing purpose
-                EntityManager em = HibernateUtil.getEmf().createEntityManager();
-//                models.User SampleUser = em.find(models.User.class, 3);
-
-                UserService userService = new UserService();
-
                 String enteredUsername = username.getText();
                 String enteredPassword = new String(password.getPassword());
 
+                if (enteredUsername.trim().isEmpty() || enteredPassword.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(null, "Please enter both username and password.", "Input Error", JOptionPane.WARNING_MESSAGE);
+                    return;
+                }
+
+                UserService userService = new UserService();
                 models.User loggedUser = userService.userlogin(enteredUsername, enteredPassword);
 
-
-                System.out.println(loggedUser.getId() + " " + loggedUser.getNickName());
-
                 if (loggedUser != null) {
-                    JOptionPane.showMessageDialog(null, "Login successful! Welcome " + loggedUser.getUsername());
+                    System.out.println(loggedUser.getId() + " " + loggedUser.getNickName());
 
-                    // Convert to client.User if needed (depending on your design)
-//                    User user = new User(loggedUser.getId(), loggedUser.getNickName());
+//                    JOptionPane.showMessageDialog(
+//                            null,
+//                            "Login successful! Welcome " + loggedUser.getUsername(),
+//                            "Success", // Title of the dialog
+//                            JOptionPane.INFORMATION_MESSAGE // Message type for icon
+//                    );
 
+
+                    EntityManager em = HibernateUtil.getEmf().createEntityManager();
                     models.User logedUser = em.find(models.User.class, loggedUser.getId());
 
-
-                    // set the login user status
                     userScreen.setUser(logedUser);
-                    // show to chat screen
-
-                    System.out.println(logedUser.getIsAdmin()+logedUser.getNickName());
 
                     if (Boolean.TRUE.equals(logedUser.getIsAdmin())) {
                         userScreen.showAdminChatScreen();
-                    } else if (Boolean.FALSE.equals(logedUser.getIsAdmin())) {
+                    } else {
                         userScreen.showUserChatScreen();
                     }
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Invalid credentials. Please try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
-                    }
 
-                    // show chat screen
+                } else {
+                    System.out.println("Login failed: invalid credentials");
+                    JOptionPane.showMessageDialog(null, "Invalid credentials. Please try again.", "Login Failed", JOptionPane.ERROR_MESSAGE);
+                }
+
+        // show chat screen
 
             }
         });
 
-//        adminLogin.addActionListener((e)->{
-//            // get sample user for testing purpose
-//            EntityManager em = HibernateUtil.getEmf().createEntityManager();
-//            models.User SampleUser = em.find(models.User.class, 1);
-//
-//            // set the login user status
-//            userScreen.setUser(SampleUser);
-//
-//            userScreen.showAdminChatScreen();
-//        });
 
         register.addActionListener((e)->{
             userScreen.showUserRegisterScreen();
