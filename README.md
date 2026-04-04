@@ -2,7 +2,7 @@
 
 A multi-user, real-time chat application built with Java. It uses **Java RMI** for remote method invocation, **TCP sockets** for streaming messages, a **Swing GUI** for the desktop client, and **MySQL + Hibernate/JPA** for persistence.
 
-![login screen]("login-screen.png")[]
+![login screen](login-screen.png)[]
 
 ---
 
