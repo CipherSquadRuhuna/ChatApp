@@ -1,6 +1,5 @@
 package client.gui.common;
 
-
 import client.gui.admin.AdminChatScreen;
 import client.gui.admin.AdminCreateNewChat;
 import client.gui.admin.AdminUserList;
@@ -42,9 +41,9 @@ public class AppScreen extends JFrame {
     }
 
     /**
-     * Change title of the window
+     * Change the title of the window
      *
-     * @param title - new title that need to change
+     * @param title - new title that needs to change
      */
     public void changeTitle(String title) {
         this.setTitle(title);
@@ -75,7 +74,7 @@ public class AppScreen extends JFrame {
     public void showAdminChatScreen(Chat chat) {
         JPanel adminChatScreen = new AdminChatScreen(this, chat);
         containerPanel.add(adminChatScreen, "AdminChat");
-        setTitle( user.getNickName());
+        setTitle(user.getNickName());
         cardLayout.show(containerPanel, "AdminChat");
     }
 

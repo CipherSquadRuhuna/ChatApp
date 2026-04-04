@@ -26,7 +26,7 @@ public class ChatArea extends JPanel {
     protected final User user;
 
     /**
-     * UI Elements for chat area
+     * UI Elements for the chat area
      */
     protected final JPanel chatPanel = new JPanel(new BorderLayout());
     private final JPanel chatArea = new JPanel();
@@ -57,7 +57,7 @@ public class ChatArea extends JPanel {
     }
 
     /**
-     * Get current selected chat
+     * Get the current selected chat
      *
      * @return Chat
      */
@@ -66,7 +66,7 @@ public class ChatArea extends JPanel {
     }
 
     /**
-     * Set the selecte chat
+     * Set the select chat
      *
      * @param chat
      */
@@ -101,7 +101,7 @@ public class ChatArea extends JPanel {
     }
 
     /**
-     * Check if the current login user leave from the chat
+     * Check if the current login user leaves from the chat
      */
     public Boolean isUnsubscribed() {
         return getUserChat().getUnsubscribedAt() != null;
@@ -109,14 +109,14 @@ public class ChatArea extends JPanel {
 
     /**
      * Display chat messages or relevant section base on state
-     * This method control which section to show for user/admin base on the current intraction of chat
-     * For Example: Subscriber Button for Not Subscriber users
+     * This method controls which section to show for user/admin base on the current intraction of chat
+     * For Example, Subscriber Button for Not Subscriber users
      */
     public void handleChatDisplayArea() {
 //        // set the chat property in chat utility
 //        chatUtility.setChat(chat);
 
-        // check if the user subscribe to the chat
+        // check if the user subscribes to the chat
         try {
             if (!isSubscribed()) {
                 displaySubscribeToChat();
@@ -129,7 +129,7 @@ public class ChatArea extends JPanel {
                 return;
             }
 
-            // if nor barriers then show the chat screen
+            // if nor barriers, then show the chat screen
             DisplaySelectedChat();
         } catch (Exception e) {
             System.out.println(e.getMessage());
