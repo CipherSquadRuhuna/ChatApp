@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DdlMappings">
+    <mapping uuid="4bf9d9c9-6d24-451d-b39f-021e1db4b3c9" name="chat_application@localhost Mapping">
+      <data-sources db="ee1d858c-053b-4ce3-ae40-ab5d3cc43542" />
+      <scope>
+        <node kind="schema" qname="chat_application" />
+      </scope>
+    </mapping>
+  </component>
+</project>

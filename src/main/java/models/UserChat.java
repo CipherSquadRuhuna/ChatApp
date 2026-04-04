@@ -1,7 +1,7 @@
 package models;
 
 import jakarta.persistence.*;
-import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -26,7 +26,7 @@ public class UserChat implements Serializable {
     @JoinColumn(name = "chat_id", nullable = false)
     private Chat chat;
 
-    @ColumnDefault("current_timestamp()")
+    @CreationTimestamp
     @Column(name = "subscribed_at", nullable = false)
     private Instant subscribedAt;
 

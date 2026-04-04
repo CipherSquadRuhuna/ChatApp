@@ -2,6 +2,7 @@ package models;
 
 import jakarta.persistence.*;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.io.Serializable;
 import java.time.Instant;
@@ -14,7 +15,6 @@ public class User implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY) // Let MySQL auto-generate it
     @Column(name = "user_id")
     private Integer id;
-
 
     @Column(name = "email", nullable = false)
     private String email;
@@ -35,11 +35,11 @@ public class User implements Serializable {
     @Column(name = "is_admin")
     private Boolean isAdmin;
 
-    @ColumnDefault("current_timestamp()")
+    @CreationTimestamp
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
-    @ColumnDefault("current_timestamp()")
+    @CreationTimestamp
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
